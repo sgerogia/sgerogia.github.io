@@ -79,7 +79,7 @@ time-pressure? Initializr.
 
 It is [available online][11], ready to be used.
 
-![Initializr UI](../images/flight-stats/initializr.jpg)
+![Initializr UI](../images/flight-stats/initializr.png)
 
 A couple of values typed and you can download the zipped project.
 
@@ -142,8 +142,9 @@ The only changes I am doing are to
 * add the [RestAssured][18] library for integration testing
 
 <details>
-<summary>Updates to `pom.xml`</summary>
+<summary>**Updates to `pom.xml`**</summary>
 <p>
+
 ```xml
     <properties>
     ...
@@ -178,8 +179,9 @@ The only changes I am doing are to
 Let's add some basic configuration by editing `src/main/resources/application.properties`.
 
 <details>
-<summary>Additions to `application.properties`</summary>
+<summary>**Additions to `application.properties`**</summary>
 <p>
+
 ```properties
 # Spring's logging can be useful to trouble-shoot things 
 logging.level.org.springframework=INFO
@@ -213,10 +215,10 @@ However, this [does not seem to work as expected][21]; we need a short
 one-liner in the main class to fix it.
 
 <details>
-<summary>Update main class</summary>
+<summary>**Update main class**</summary>
 <p>
+
 ```kotlin
-...
 @SpringBootApplication
 class FightStatusApplication {
                              
@@ -232,8 +234,9 @@ class FightStatusApplication {
 Let's see what we have so far.<sup>Output formatted for readability</sup>
 
 <details>
-<summary>Running on the command line</summary>
+<summary>**Running on the command line**</summary>
 <p>
+
 ```
 $ mvn spring-boot:run
 ...
@@ -271,8 +274,9 @@ Kotlin [data classes][22] are THE way to create DTOs.
 Let's create something which looks remotely plausible as a store of a 
 flight's info.
 
-<details><summary>FlightStatus data class</summary>
+<details><summary>**FlightStatus data class**</summary>
 <p>
+
 ```kotlin
 enum class StatusIndicator {
     Active,
@@ -323,8 +327,9 @@ fields to default marker values.
 
 Let's create a CRUD JPA `Repository` having our custom query.
 
-<details><summary>FlightStatus JPA Repository</summary>
+<details><summary>**FlightStatus JPA Repository**</summary>
 <p>
+
 ```kotlin
 interface FlightStatusRepository : CrudRepository<FlightStatus, String> {
 
@@ -346,8 +351,9 @@ interface FlightStatusRepository : CrudRepository<FlightStatus, String> {
 
 ...and the DTO validator.
 
-<details><summary>FlightStatusValidator</summary>
+<details><summary>**FlightStatusValidator**</summary>
 <p>
+
 ```kotlin
 @Component
 class FlightStatusValidator : Validator {
@@ -425,8 +431,9 @@ of the CRUD operations.
 Definitely not ground-breaking code; a simple example of Kotlin.
 
 
-<details><summary>FlightStatusService</summary>
+<details><summary>**FlightStatusService**</summary>
 <p>
+
 ```kotlin
 @Service
 class FlightStatusService(
