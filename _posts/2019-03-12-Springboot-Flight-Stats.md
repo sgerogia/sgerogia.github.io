@@ -66,6 +66,10 @@ how-to guides becoming stale much faster.
 Enter [Spring Initializr][10]. 
 <!--more-->
 
+*Note*:  
+All the code of this post can be found [in this repo][26].  
+All unit & integration testing code is not referenced in this post.
+
 ## Setting things up
 
 ![Code](../images/flight-stats/arget-1140288-unsplash.jpg)
@@ -122,6 +126,12 @@ When creating/updating a flight apply some common-sense validation checks
 once a flight is landed/canceled cannot update anymore,...)
 * Has a simple in-memory DB to keep track of things.
 
+To keep things super-simple: 
+* All times are in UTC
+* Only storing airport's [IATA code][23], no other info
+* No conversion to local time at any point (which would require storing 
+airport timezone etc)
+
 ### Libraries
 
 If you used the above cURL verbatim then you will have a Maven project with
@@ -139,10 +149,12 @@ and `pluginRepositories` section at the end of `pom.xml`.
 
 The only changes I am doing are to 
 * bump Kotlin to the latest version<sup>as of writing this</sup> 
+* add [Springfox][27] for Swagger doc generation (unfortunately, not yet
+part of Spring proper)
 * add the [RestAssured][18] library for integration testing
 
 <details>
-<summary>**Updates to `pom.xml`**</summary>
+<summary><b>Updates to `pom.xml`</b></summary>
 <p>
 
 ```xml
@@ -159,11 +171,20 @@ The only changes I am doing are to
                 <artifactId>rest-assured</artifactId>
                 <version>3.3.0</version>
             </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>2.9.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
     ...
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
@@ -179,7 +200,7 @@ The only changes I am doing are to
 Let's add some basic configuration by editing `src/main/resources/application.properties`.
 
 <details>
-<summary>**Additions to `application.properties`**</summary>
+<summary><b>Additions to `application.properties`</b></summary>
 <p>
 
 ```properties
@@ -209,13 +230,14 @@ info.app.version=0.0.1
 </p>
 </details>
 
+
 Normally we would use the `spring.jpa.properties.hibernate.jdbc.time_zone` 
 to change the timezone for all datetim operations.  
 However, this [does not seem to work as expected][21]; we need a short
 one-liner in the main class to fix it.
 
 <details>
-<summary>**Update main class**</summary>
+<summary><b>Update main class</b></summary>
 <p>
 
 ```kotlin
@@ -231,14 +253,17 @@ class FightStatusApplication {
 </p>
 </details>
 
+
 Let's see what we have so far.<sup>Output formatted for readability</sup>
 
 <details>
-<summary>**Running on the command line**</summary>
+<summary><b>Running - Hitting Actuator</b></summary>
 <p>
 
 ```
 $ mvn spring-boot:run
+...
+many lines of output later
 ...
 $ curl http://localhost:8080/actuator
 {
@@ -268,13 +293,28 @@ $ curl http://localhost:8080/actuator
 </p>
 </details>
 
+Great!  
+Actuator is up and running.
+
+
+If we create all the remaining components of the service in sub-packages
+under `FightStatusApplication`, then SpringBoot will auto-detect everything
+automatically.  
+I.e. if we have `com.foo.FightStatusApplication`, then placing all our 
+remaining Spring components (services, validators, DTOs, controllers,...)
+in sub-packages (`com.foo.model`, `com.foo.service` etc), SB will create
+the Spring context automatically. 
+
 ### Domain model
 
 Kotlin [data classes][22] are THE way to create DTOs.  
+In the Java world we would be using the [Lombok Data annotation][24] to 
+achieve the same result. 
+
 Let's create something which looks remotely plausible as a store of a 
 flight's info.
 
-<details><summary>**FlightStatus data class**</summary>
+<details><summary><b>FlightStatus data class</b></summary>
 <p>
 
 ```kotlin
@@ -305,29 +345,47 @@ enum class StatusIndicator {
 data class FlightStatus(
         @Id
         val flightId: String = UUID.randomUUID().toString(),
+        
         @Length(min = 3) val flightNumber: String = "",
+        
         @Length(min = 3) val departureAirport: String = "",
+
         @Length(min = 3) val arrivalAirport: String = "",
+
+        @JsonProperty("scheduledDeparture")
         val scheduledDepartureDateUtc: ZonedDateTime = ZonedDateTime.now(),
+
+        @JsonProperty("departure")
         val departureDateUtc: ZonedDateTime? = null,
+
+        @JsonProperty("scheduledArrival")
         val scheduledArrivalDateUtc: ZonedDateTime = ZonedDateTime.now(),
+
+        @JsonProperty("arrival")
         val arrivalDateUtc: ZonedDateTime? = null,
+
         val status: StatusIndicator = StatusIndicator.Scheduled
 )
 ```
 </p>
 </details>
 
+
 I have added
 * the `@Table` mapping with a multi-column uniqueness constraint
 * basic validations on some fields to be executed in the web controller on bind
+* some custom JSON deser field names
 * several fields as nullable, since the 'record' will start its life 
 partially initialized. Another approach could have been to initialize all 
 fields to default marker values.
 
-Let's create a CRUD JPA `Repository` having our custom query.
+Let's create a CRUD JPA `Repository` having our custom query.  
+On the back of the REST endpoint parameters, the query is filtering by  
+* departure airport
+* arrival airport
+* departure calendar date, essentially `DAY@00:00:00.000 <= X <= DAY@23:59:59.999`
 
-<details><summary>**FlightStatus JPA Repository**</summary>
+<details><summary><b>FlightStatus JPA Repository</b></summary>
 <p>
 
 ```kotlin
@@ -349,9 +407,12 @@ interface FlightStatusRepository : CrudRepository<FlightStatus, String> {
 </p>
 </details>
 
-...and the DTO validator.
 
-<details><summary>**FlightStatusValidator**</summary>
+...and the DTO validator.  
+I have added some common-sense validations for good measure; needless to
+say this is just a quasi-realistic example.
+
+<details><summary<b>FlightStatusValidator</b></summary>
 <p>
 
 ```kotlin
@@ -426,23 +487,27 @@ class FlightStatusValidator : Validator {
 
 ### Service 
 
-The repository is wrapped inside a service class which handles the logic 
-of the CRUD operations.  
-Definitely not ground-breaking code; a simple example of Kotlin.
+Trying to isolate the presentation/API layer from the actual persistence
+code, let's add a [service class][25]. This will handle the logic and 
+transformations of the CRUD operations.  
 
+Again, definitely not ground-breaking code; a simple example of Kotlin.
 
-<details><summary>**FlightStatusService**</summary>
+<details><summary><b>FlightStatusService</b></summary>
 <p>
 
 ```kotlin
 @Service
 class FlightStatusService(
-        private val repository: FlightStatusRepository) {
+        private val repository: FlightStatusRepository,
+        private val validator: FlightStatusQueryValidator) {
 
     private val log = LoggerFactory.getLogger(FlightStatusService::class.java)
 
     fun getFlights(criteria: FlightStatusQuery): List<FlightStatus> {
 
+        validate(criteria)
+        
         log.debug("Searching for flights ", criteria)
         val dateEnd = ZonedDateTime.of(
                 criteria.scheduledDepartureDateUtc.year,
@@ -495,22 +560,170 @@ class FlightStatusService(
         // update fields
         with(toUpdate) {
             repository.save(
-                toUpdate.copy(
-                        status = flight.status, 
-                        departureDateUtc = flight.departureDateUtc?.let { it.truncatedTo(ChronoUnit.MINUTES) },
-                        arrivalDateUtc = flight.arrivalDateUtc?.let { it.truncatedTo(ChronoUnit.MINUTES) }            
-                )        
+                    toUpdate.copy(
+                            status = flight.status,
+                            departureDateUtc = flight.departureDateUtc?.let { it.truncatedTo(ChronoUnit.MINUTES) },
+                            arrivalDateUtc = flight.arrivalDateUtc?.let { it.truncatedTo(ChronoUnit.MINUTES) }
+                    )
             )
         }
         return toUpdate
+    }
+
+    private fun validate(criteria: FlightStatusQuery) {
+        val err = BindException(criteria, "criteria")
+        validator.validate(criteria, err)
+        if (err.hasErrors()) {
+            throw err
+        }
     }
 }
 ```
 </p>
 </details>
 
+The service takes a smaller DTO with the query params. I have defined this 
+as a separate class, with its own validator (omitted for brevity). 
 
+### Controller
+
+Continuing in this bottom-up approach of building the microservice, we 
+have the REST controller.  
+The class has the standard Spring annotations to mark it as request 
+controller and enable bind validation.
  
+<details><summary><b>FlightStatusController</b></summary>
+<p>
+
+```kotlin
+@RestController
+@RequestMapping("/api/v1/flights",
+        consumes = [APPLICATION_JSON_VALUE],
+        produces = [APPLICATION_JSON_VALUE])
+@Validated
+class FlightStatusController(
+        private val service: FlightStatusService
+) {
+
+    private val log = LoggerFactory.getLogger(FlightStatusController::class.java)
+
+    @GetMapping("/{departureAirport}/{arrivalAirport}/dep/{year}/{month}/{day}")
+    fun flightStatus(
+            @Length(min = 3) @PathVariable("departureAirport", required = true) depAirport: String,
+            @Length(min = 3) @PathVariable("arrivalAirport", required = true) arrAirport: String,
+            @PathVariable("year", required = true) year: Int,
+            @Max(12) @PathVariable("month", required = true) month: Int,
+            @Max(31) @PathVariable("day", required = true) day: Int
+    ): List<FlightStatus> {
+
+        val criteria = FlightStatusQuery(
+                departureAirport = depAirport,
+                arrivalAirport = arrAirport,
+                scheduledDepartureDateUtc = ZonedDateTime.of(year, month, day, 0, 0, 0, 0, ZoneId.of("UTC"))
+        )
+
+        val flights = service.getFlights(criteria)
+        log.info("Found {} matching flights", flights.size)
+        return flights
+    }
+
+    @PostMapping
+    fun addFlight(@Valid @RequestBody flight: FlightStatus): FlightStatus {
+
+        return service.addFlight(flight)
+    }
+
+    @PutMapping
+    fun updateFlight(@Valid @RequestBody flight: FlightStatus): FlightStatus {
+
+        return service.updateFlight(flight)
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class, BindException::class, DateTimeException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleConstraintViolationException(e: Exception): ResponseEntity<String> {
+        return ResponseEntity(e.message, HttpStatus.BAD_REQUEST)
+    }
+}
+```
+</p>
+</details>
+
+The controller also defines a `POST` and `PUT` endpoint to allow creation
+and update of flight info. 
+
+## Running it
+
+Let's tie everything together.  
+Fire up the microservice: `mvn spring-boot:run`
+
+First, let's see our little DB in action.  
+We have enabled the web console in our properties `spring.h2.console.enabled=true`, 
+so we can connect our browser `http://localhost:8080/flightstatus/h2`.  
+Type the same connection details as in the `application.properties`.
+
+![H2 console](../images/flight-stats/h2-console-1.png)
+
+We can see our table and we can quickly fire off a SELECT query.
+
+![H2 SELECT query](../images/flight-stats/h2-console-2.png)
+
+Very good!
+
+Let's add some data
+
+<details><summary><b>POSTing data with cURL</b></summary>
+<p>
+
+```
+$ printf "%s" "
+{  \"flightNumber\": \"AA123\",
+    \"departureAirport\": \"LGW\",
+    \"arrivalAirport\": \"ATH\",
+    \"scheduledDeparture\": \"2019-03-23T19:45:00Z\",
+    \"scheduledArrival\": \"2019-03-24T20:05:00Z\"
+}" | curl \
+   -H "Content-Type: application/json" \
+   -X POST \
+   -d @- \
+   http://localhost:8080/flightstatus/api/v1/flights
+
+```
+</p>
+</details>
+
+We get back the initialized object as a response. 
+
+Let's check our DB
+
+![H2 SELECT query](../images/flight-stats/h2-console-3.png)
+
+Great!
+
+We can now retrieve our object  
+```
+curl \
+   -H "Content-Type: application/json" \
+   http://localhost:8080/flightstatus/api/v1/flights/LGW/ATH/dep/2019/03/23
+```
+
+...and update it (or cause a validation error, as the example below will).  
+```
+$ printf "%s" "
+{   \"flightId\": \"a633be3d-fb79-4cd1-8f38-410fd628104b\",
+    \"flightNumber\": \"AA123\",
+    \"departureAirport\": \"LGW\",
+    \"arrivalAirport\": \"ATH\",
+    \"scheduledDeparture\": \"2019-03-23T19:45:00Z\",
+    \"scheduledArrival\": \"2019-03-24T20:05:00Z\",
+    \"arrival\": \"2019-03-23T19:45:00Z\"
+}" | curl \
+   -H "Content-Type: application/json" \
+   -X PUT \
+   -d @- \
+   http://localhost:8080/flightstatus/api/v1/flights
+```
+
 
 
    [1]: https://spring.io/projects
@@ -534,4 +747,8 @@ class FlightStatusService(
    [20]: https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html
    [21]: https://moelholm.com/2016/11/09/spring-boot-controlling-timezones-with-hibernate/
    [22]: https://kotlinlang.org/docs/reference/data-classes.html
-   [23]: 
+   [23]: https://en.wikipedia.org/wiki/IATA_airport_code
+   [24]: https://projectlombok.org/features/Data
+   [25]: https://en.wikipedia.org/wiki/Service_layer_pattern
+   [26]: https://www.github.com/sgerogia/flight-status
+   [27]: https://springfox.github.io/springfox/docs/current
