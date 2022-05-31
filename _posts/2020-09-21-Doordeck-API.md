@@ -4,7 +4,7 @@ title: "Physical Access as a Service: Using the Doordeck API"
 author: stelios
 tags: [api, hands-on, tutorials]
 categories: [Software Development, ]
-featured: true
+featured: false
 description: "Doordeck provides a robust API and platform for physical and resource access management. This post provides a quick introduction on how to connect to the platform."
 image: assets/images/doordeck/door-green-closed-lock-4291.jpg
 ---
