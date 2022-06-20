@@ -172,11 +172,11 @@ They should be available for all scripts we will run from now on.
 $ echo $GOPATH
 /something/foo/bar
 $ echo $PATH
-<something something>:$GOPATH/bin
+< somethingsomething >:$GOPATH/bin
 ```
 
 * Build Band chain  
-```bash
+```
 $ git clone https://github.com/bandprotocol/chain
 $ cd chain && git checkout v2.3.3
 $ make install
@@ -293,9 +293,9 @@ We will need 3 separate terminal consoles. Make sure all of them have a correctl
 * One running our local testnet Band validator  
 `$ cd chain && ./scripts/start_bandd.sh`
 
-* One running the Yoda process  
+* One running the Yoda process. This will connect to the `bandd` process via WebSocket.  
 ```
-$ ch chain && ./scripts/start_yoda.sh 
+$ cd chain && ./scripts/start_yoda.sh 
 ...            
 I[2022-06-17|15:52:52.010] 🚀  Starting WebSocket subscriber   
 I[2022-06-17|15:52:52.014] 👂  Subscribing to events with query: tm.event = 'Tx' AND request.id EXISTS... 
@@ -342,7 +342,8 @@ We must replace this identifier in the oracle Rust script and rebuild.
 
 ## Deploy Oracle
 
-Take a note of the `schema` argument which is crucial; more on this below.
+Once we rebuild the oracle (e.g. `make all`), we can deploy it.
+Notice the `schema` argument which is crucial; more on this below.
 ```
 $ bandd tx oracle create-oracle-script \
     --schema "{flight:string,date:string}/{status:string,arrival_airport:string,scheduled_time_utc:string,actual_time_utc:string}" \
@@ -382,7 +383,7 @@ Before calling our oracle, let's take a minute to understand [OBI][40], the sche
 
 OBI is a custom schema definition language and binary encoding standard. It is Band's way of passing arguments and 
 results from/to Oracles. The underlying reason for this custom format is to allow the generation of one-way unambiguous 
-hex hashes based on a schema. This is necessary to enable lookups and comparisons inside the chain's state store.  
+hex hashes based on a schema. This is necessary to enable lookups and comparisons inside the chain's [state store][55].  
 
 Luckily the logic of encoding/decoding has been implemented in a number of languages, including Python.
 See the utility script [obi_codec.py][41].  
@@ -434,7 +435,8 @@ The validator has received our request and its Yoda process has forwarded it to 
 ![Cloud function log](../assets/images/band-protocol/cloud_function_call.png)
 > Cloud function logs
  
-The Yoda process, using the validator's key, has submitted a transaction. Let's take a look at it.  
+Upon receiving the cloud function result, the Yoda process has submitted a transaction (signed using the validator's key).  
+Let's take a look at it.  
 ```
 $ bandd query tx A0EDD1D4E70D9D595AAB97227C5896379BA9FE5E7CD43FB1FF6D2BED2B6EA4E8 
 ...
@@ -489,7 +491,7 @@ $ curl -k -X POST \
 {"txHash":"187737018A114570CAD60E80D99FD3F34E0270ACC61F19FD67E4453D74845570"}
 ```
 
-We can then verify the new balance on the testnet.
+We can then verify the new balance on the testnet.  
 ```
 $ bandd query bank balances band1m5lq9u533qaya4q3nfyl6ulzqkpkhge9q8tpzs \
     --node http://rpc-laozi-testnet4.bandchain.org:26657 \
@@ -554,7 +556,9 @@ Once again, we can verify the deployment of the Oracle on the [testnet][45] and 
 ![Deployed Oracle](../assets/images/band-protocol/deployed_oracle.png)
 > Deployed Oracle on the Band Testnet
 
-Calling the Oracle with the id we noted from above. Note how we need to increase the `fee-limit` to be more than 5x the 
+## Call the Oracle 
+Using the id we noted from above we can call the oracle.  
+Note how we need to increase the `fee-limit` to be more than 5x the 
 required for each Data Source invocation. This is because we defined the desired number of validators to 5 in the 
 request arguments.    
 ```
@@ -575,7 +579,7 @@ gas estimate: 534165
 txhash: 7E9706646BC89738EFCDD63398A342E6AECFEB474E375CD37E5D514EFF2375A9
 ```
 
-We can see our updated call counter
+We can see our updated call counter in the Explorer
 ![Oracle counter](../assets/images/band-protocol/oracle_counter.png)
 > Oracle call counter
 
@@ -587,7 +591,7 @@ we can see the submitted query and the returned data.
 ![Data request details](../assets/images/band-protocol/data_request_details.png)
 > Data request details
 
-Awesome result!!  
+Awesome stuff!!  
 🎉🎉
 
 # Discussion
@@ -707,3 +711,4 @@ would be way over the block size limit.
   [52]: https://docs.bandchain.org/whitepaper/decentralized-validator-sampling.html
   [53]: https://docs.provable.xyz/#data-sources-computation
   [54]: https://cosmoscan.io/data-sources
+  [55]: https://github.com/cosmos/iavl
