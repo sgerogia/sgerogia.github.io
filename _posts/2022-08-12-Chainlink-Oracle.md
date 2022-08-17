@@ -36,7 +36,7 @@ To achieve this, the protocol
 Before we deep-dive into the technicals of Chainlink, let's have a quick look on the different use cases it considers as 
 relevant
 
-*All images taken from the Chainlink [whitepaper][2]*<sup>[1](#footnote_1)</sup>
+*Images in this section are from the Chainlink [whitepaper][2]*<sup>[1](#footnote_1)</sup>
 
 **Oracle data**
 
@@ -84,7 +84,7 @@ Let's take a quick tour of the data flow and different components involved in Ch
 ![Chainlink data flow](../assets/images/chainlink-oracle/chainlink_oracle.png)
 
 1. The Oracle developer deploys their oracle contract on an EVM-compatible chain (e.g. Ethereum) or [Solana][10].  
-Their `<<custom>> Oracle` implementation extends the base `<<Chainlink>> Oracle` contract.
+Their `<<custom>> Oracle` implementation extends the base `<<Chainlink>> Oracle` contract.<sup>[1](#footnote_2)</sup>
 In the background they also setup their oracle node or Decentralized Oracle Network (DON). More on this in the 
 ['Oracle node' section](#oracle_node).   
 The oracle is now ready to be used (e.g. it can be advertised in [Chainlink's oracle marketplace][6]). 
@@ -135,134 +135,157 @@ for them to spin up new services based on configuration, rather than coding. Zer
 
 ### <a name="don"></a>DON
 
+![The real Don](../assets/images/chainlink-oracle/don.png)
+
+A Decentralized Oracle Network (DON) is a subset of Chainlink nodes forming a committee and agreeing to serve clients 
+on other chains (e.g. smart contracts). The DON's service is a combination of networking, storage and computation.
+
+The DON could be organized in one of 2 ways:  
+* [Basic Request Model][25]  
+In this setup, described in the previous section, the DON fetches data from primary data sources after it has been 
+requested by consumers.  
+It is useful when the consumer can tolerate a delay between requesting and receiving the data.
+* [Data Feed][23]  
+This setup is used when data needs to be timely and acted upon immediately (e.g. price tickers).  
+Here the oracle(s) in the DON provide data observations on regular intervals and these are stored in the oracle contract 
+on-chain.
+
+**[Off-chain Reporting][24]** (OCR)  
+OCR is a lightweight [consensus protocol][26], designed to provide transparency in off-chain calculations.  
+It has the same compaction effect as [ZK rollups][27] (many data points in a single transaction), but transparent; the 
+result is signed by a majority of DON participants, and we know which oracle has reported what.
+
+The OCR protocol has a predetermined list of oracles. It is a [PBFT][28] derivative, so it requires over 2/3 of participants to be well-behaved. , correct oracles receive payout from s.c.
+Like PBFT, it has 4 stages, after leader election 
+1. Start of epoch (cycle)
+2. Followers submit observations 
+3. Leader compiles the report 
+4. Followers sign the report 
+
+and then the leader submits the final report.
+
+The main deviation from PBFT is the additional check for epoch invalidation. I.e. if the participants cannot reach a 
+conclusion in a timely manner, the current epoch is cancelled and a new one starts.
 
 
-### Architecture discussion
+With the technical description out of the way, let's re-visit our flight oracle use case.
 
-Viewed from a very high level, the Band Protocol architecture does not deviate from the archetypical Oracle pattern, 
-first [introduced by Ethereum][16]. An Oracle contract emits a special event, an associated out-of-chain, trusted process
-listens to that event, fetches data and performs a method callback on the Oracle contract.
+# Flight oracle, the Chainlink way
 
-This pattern has already been productionized into a SaaS offering for the Ethereum ecosystem by [Provable][17] (formely Oraclize). 
+![Landing](../assets/images/band-protocol/john-mcarthur-8KLLgqHMAv4-unsplash.jpg)
+> Photo by John McArthur on Unsplash
 
-Band's core improvement of this pattern lies along 2 axes: 
-* Introduces a distributed and incentivized marketplace of data sources. This allows a Web3 application builder needing 
-external data to only focus on building on-chain logic.    
-* Makes the Oracle script a re-usable building block, akin to a reduce function in the [map-reduce][18] model.
+In the [previous article][1] we had created a flight oracle, providing information on flight arrivals. 
 
-Yoda and the cloud function are 2 additional off-chain components introduced by Band.
-They are not mandatory though. They are reference implementations of an architecture pattern, attempting to solve 2 
-issues faced by Band validators.
-* Validation is a critical function in Proof-of-Stake; poor performance gets [penalized][19].  
-Off-loading non-core functionality away from the validator process is priority 1. This includes the execution of Data 
-Source code with unknown complexity (e.g. blocking network calls).
-* Keeping code of unknown provenance (i.e. potentially malicious) away from the validator's network domain.
+As a quick reminder:  
+* Oracle consumer requests flight status by providing
+  * flight number in [IATA format][39], and 
+  * date in [ISO-8601][40] 
+* Oracle responds with  
+  * Flight [status][41] string, 
+  * Arrival airport code, 
+  * Scheduled Departure Time (ISO-8601 UTC), 
+  * Actual Arrival Time (optional, ISO-8601 UTC)  
 
-With the technical description out of the way, let's consider a semi-realistic use case.
+In this iteration, we will setup  
+* an Oracle contract on the Rinkeby ETH testnet, callable by other smart contracts,
+* a local Chainlink node, listening for instructions from that contract, 
+* the node will be configured to use our flight oracle API, and
+* submitting its report back to the oracle contract.
 
-# Flight oracle
 
-![Take off](../assets/images/band-protocol/bing-hui-yau-crdXa0op5bI-unsplash.jpg)
-> Photo by Bing Hui Yau on Unsplash
+TODO insert schematic of setup
 
-We will create a simple flight data oracle.
+We will run our local node using K8s, orchestrated by Tilt.
+The Chainlink node is using Postgres as its persistent storage.
 
-It will be able to answer the following question  
-> Has flight X and date Y arrived?  
-> If yes, what time (vs the scheduled one) and at which airport?
-
-This could be useful in a number of scenarios, like an automatic flight insurance contract. 
+> If you have not already followed the steps of the previous article, at the very least you will need to create a 
+> [free AeroDataBox account][44].
 
 Let's get prepared.
 
-
-
 ## Local environment 
 
-Let's prepare our local dev environment. 
+First we need to setup our local dev environment. 
 
-### Go & Band chain binaries 
+### Cluster 
 
-* Install [Golang][25]  
-Make sure that `GOPATH` and `PATH` are populated.  
-They should be available for all scripts we will run from now on.  
-```
-$ echo $GOPATH
-/something/foo/bar
-$ echo $PATH
-< somethingsomething >:$GOPATH/bin
-```
+**Docker**  
+Follow the instructions in [Docker][30] for your machine type (Mac, Windows) 
 
-* Build Band chain  
-```
-$ git clone https://github.com/bandprotocol/chain
-$ cd chain && git checkout v2.3.3
-$ make install
-```
+Enable Kubernetes (K8s) support in Docker.  
+![Enabling K8s support](../assets/images/chainlink-oracle/docker-desktop.png)
 
-* Test them  
-```
-$ bandd version --long
-$ yoda version --long
-```
+**Kubectl, Helm & Tilt**  
 
-### Rust 
+If you do not have them, install   
+* [kubectl][35]
+* [Helm][36], and
+* [Tilt][31] (installation [instructions][29])
 
-We will use Rust to build our WASM Oracle script.
+Make sure you are using Docker Desktop as the K8s environment.  
+`kubectl config use-context docker-desktop`
 
-* Install [Rust][26]
+### Truffle 
 
-* Install the custom build target  
-This should not normally be necessary, but it was in my case.  
-`$ rustup target add wasm32-unknown-unknown`
+We will use [Truffle][https://trufflesuite.com/docs/truffle/] to facilitate our communication with the Oracle contract.  
+Follow its [installation][33] instructions. 
+Do not worry about installing an Ethereum client, because we will be using the... 
 
-### Python 3
+### Infura API
 
-We will use Python for our Data Source script. 
+We will need an [Infura API][34] token to communicate with the Rinkeby testnet.  
+Head over, register for free and generate an API key. 
 
-* Install [Python 3][27]  
-`$ python3 --version`
-
-* Install [Band's client][28] for Python  
-`$ pip3 install pyband`
-
-### Generate accounts
-
-To interact with the Band chain (or any Cosmos chain, for that matter) we will need some [Accounts][29] on our machine. 
-
-We can take a shortcut and use the [genesis file][30] script which comes in Band's sources.  
-```
-$ cd chain && ./scripts/generate_genesis.sh 
-{"app_message"...
-...
-Genesis transaction written to ...
-```
-
-We can verify the creation with `$ ls ~/.band/`.
-
-Let's view the keys in the [keyring][31] and take a note of the addresses.  
-```
-$ bandd keys list --keyring-backend test
-- name: requester
-  type: local
-  address: band1m5lq9u533qaya4q3nfyl6ulzqkpkhge9q8tpzs
-  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"A6rU4D6xY4ibvdSDdg8iLDSVF73O6ZB/vUH6iJsNRNqY"}'
-  mnemonic: ""
-- name: validator
-  type: local
-  address: band1p40yh3zkmhcv0ecqp3mcazy83sa57rgjp07dun
-  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AiS3jI4M4wP0Aqn+4RhteonBF82QvzdR6OGFF2rlFKMk"}'
-  mnemonic: ""
-```
-
-The `validator` account will be the Data Source & Oracle owner and the `requester` the user. 
+![Infura API key](../assets/images/chainlink-oracle/infura-key.png)
 
 We are finally ready to...
 
 # Get coding 
 
-![Coding](../assets/images/band-protocol/kevin-ku-w7ZyuGYNpRQ-unsplash.jpg)
-> Photo by Kevin Ku on Unsplash
+![Engineering](../assets/images/chainlink-oracle/thisisengineering-raeng-ZPeXrWxOjRQ-unsplash.jpg)
+> Photo by ThisisEngineering RAEng on Unsplash
+
+> You can find the code for this blog post in this [Github repo][37].  
+> Clone locally and open a terminal inside it. We will assume this is your working directory, unless explicitly noted so.    
+
+## Test local node
+
+With Docker Desktop running, let's test launching the local node.  
+```bash
+INFURA_TOKEN=<YOUR TOKEN> tilt up
+```
+
+You will be prompted to open Tilt's web UI on [http://localhost:10350/](http://localhost:10350/).  
+![Tilt console](../assets/images/chainlink-oracle/tilt-run.png)
+
+The Chainlink node will have finished booting, created its DB schema in Postgres and connected to the Ethereum Rinkeby network.  
+Let's test the node's web UI on [http://localhost:6688/](http://localhost:6688/). Use the username and password 
+you have defined in the [Tiltfile][38].  
+![Chainlink UI](../assets/images/chainlink-oracle/chainlink-ui.png)
+
+## Oracle job
+
+We mentioned above that the Chainlink node is a configurable piece of computing, like a box of lego.  
+The logic of calling out to the API provider and processing the result can be expressed as an [Oracle job][42], namely 
+a [Direct Request][43].
+
+Going back to the previous [flight oracle article][45], we can use the Python [data source implementation][46] as a 
+reference.  
+The diagram below describes one way of arranging some of the available [tasks][16] in the job's acyclic graph to achieve our result.
+
+![Flight status Job](../assets/images/chainlink-oracle/oracle-job.png)
+
+The job first extracts the flight number & date from the [CBOR-encoded][47] payload before making the HTTP call. The JSON 
+response is parsed to extract the individual fields. These are then compiled into a [multi-variable response][48] and sent
+back to the Oracle.
+
+You can view the resulting job script [in this file][49].
+
+Next up is the...
+
+## Oracle contract
+
 
 
 
@@ -315,7 +338,9 @@ Until next time, happy coding!
 
 # Footnotes
 
-1. <a name="footnote_1"></a>In the following images, smart contract and blockchain are used interchangeably.  
+1. <a name="footnote_1"></a>In the following images and text, the terms "smart contract" and "blockchain" are used interchangeably.  
+2. <a name="footnote_2"></a>In any but the most trivial cases, the oracle contract would be deployed behind a [proxy][22]
+for easy upgrades. This is omitted here for brevity.  
 
 
 
@@ -340,4 +365,31 @@ Until next time, happy coding!
   [19]: https://docs.chain.link/docs/jobs/
   [20]: https://medium.com/agileinsider/what-is-the-product-mindset-af06e01adf70
   [21]: https://www.blockchainecosystem.io/ask/what-does-it-mean-to-be-a-blockchain-node-operator-are-there-any-blockchains-out-there-that-don-t-have-node-operators
-  
+  [22]: https://fravoll.github.io/solidity-patterns/proxy_delegate.html
+  [23]: https://docs.chain.link/docs/architecture-decentralized-model/
+  [24]: https://docs.chain.link/docs/off-chain-reporting/
+  [25]: https://docs.chain.link/docs/architecture-request-model/
+  [26]: https://research.chain.link/ocr.pdf
+  [27]: https://ethereum.org/en/developers/docs/scaling/zk-rollups/
+  [28]: https://pmg.csail.mit.edu/papers/osdi99.pdf
+  [29]: https://docs.tilt.dev/install.html#macos
+  [30]: https://www.docker.com/
+  [31]: https://tilt.dev/
+  [32]: https://trufflesuite.com/docs/truffle/
+  [33]: https://trufflesuite.com/docs/truffle/getting-started/installation/
+  [34]: https://infura.io/
+  [35]: https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/
+  [36]: https://helm.sh/docs/intro/install/
+  [37]: https://github.com/sgerogia/hello-chainlink
+  [38]: https://github.com/sgerogia/hello-chainlink/blob/main/Tiltfile#L30-L31
+  [39]: https://www.iata.org/en/publications/directories/code-search/
+  [40]: https://en.wikipedia.org/wiki/ISO_8601
+  [41]: https://doc.aerodatabox.com/#tag/Flight-API/operation/GetFlight
+  [42]: https://docs.chain.link/docs/jobs/
+  [43]: https://docs.chain.link/docs/jobs/types/direct-request/
+  [44]: https://sgerogia.github.io/Band-Oracle/#data_provider
+  [45]: https://sgerogia.github.io/Band-Oracle/#data_source
+  [46]: https://github.com/sgerogia/hello-bandchain/blob/main/python/ds.py#L19-L32
+  [47]: https://en.wikipedia.org/wiki/CBOR
+  [48]: https://docs.chain.link/docs/any-api/get-request/examples/multi-variable-responses/
+  [49]: https://github.com/sgerogia/hello-chainlink/blob/main/job/aerodatabox.toml
