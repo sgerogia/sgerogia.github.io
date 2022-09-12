@@ -20,7 +20,7 @@ In my [previous blog post][1] I covered the basics of blockchain oracles, using 
 *If you have not read that post, you may want to take some time to get acquainted with some basic concepts, before proceeding.*  
 
 Chainlink is arguably the biggest oracle protocol, having started its life in the Ethereum network.  
-Currently in its [second iteration][2], Chainlink oracles    
+With the protocol currently in its [second iteration][2], Chainlink oracles    
 > provide tamper-proof inputs, outputs, and computations to support advanced smart contracts on any blockchain.
 
 To achieve this, the protocol  
@@ -40,7 +40,7 @@ relevant.
 
 ![Oracle data](../assets/images/chainlink-oracle/oracle-data.png)
 
-The vanilla use case is "off-chain data ingress":  
+The vanilla use case is "off-chain data ingress".  
 A smart contract (denoted as *Blockchain*) requests data from an oracle (denoted as *DON*). The oracle reaches out to a 
 number of external services to fetch this data.
 
@@ -52,11 +52,13 @@ This is a corollary / side-effect of the above use case. It is worth highlightin
 [some chains][3]. 
 
 A smart contract requires a number of external data points from 3rd party services.  
-A. In the simple case, the oracle is a simple pass-through. Each data point / service call becomes a new transaction in 
-the calling chain.
-B. The oracle contains "enough" logic to fan out calls to the external services and gather the required data. The different 
+<ol type="A">
+<li>In the simple case, the oracle is a simple pass-through. Each data point / service call becomes a new transaction in 
+the calling chain.</li>  
+<li>The oracle contains "enough" logic to fan out calls to the external services and gather the required data. The different 
 data points are compacted into a single payload back to the calling chain. This results in a single transaction, reducing 
-overall cost. 
+overall cost.</li>
+</ol>
 
 **Meta-layer**
 
@@ -78,20 +80,20 @@ most obvious case is ensuring transaction are first-in-first-out to prevent [MEV
 ## Architecture & components
 
 Let's take a quick tour of the data flow and different components involved in Chainlink. We will use the basic *Oracle 
-data* use case.
+data* use case from above.
 
 ![Chainlink data flow](../assets/images/chainlink-oracle/chainlink_oracle.png)
 
 1. (one-off) The Oracle operator deploys their oracle contract on a supported chain (e.g. Ethereum, [Solana][10]).  
 The `<<Chainlink>> Operator` [contract][50] is what ties the whole system together.<sup>[2](#footnote_2)</sup>
 In the background they also setup their oracle node or Decentralized Oracle Network (DON). More on this in the 
-['Oracle node' section](#oracle_node). 
+['Chainlink node' section](#oracle_node). 
 2. (one-off) The Oracle operator deploy their specific Chainlink job instance in the running Chainlink nodes (DON). The node 
 automatically generates a unique job identifier and...
 3. (one-off) the Oracle operator registers the node as a trusted address with the Oracle smart contract.  
 The oracle data feed is now ready to be used; it is uniquely identified by the combination of [`oracle contract address`,
-`job id`]. With that it can be advertised in [Chainlink's oracle marketplace][6] and other channels. 
-4. (one-off) The dApp / smart contract developer needing oracle data update their code to use the [`oracle contract address`,
+`job id`]. It can be advertised in [Chainlink's oracle marketplace][6] and other channels. 
+4. (one-off) The dApp / smart contract developer needing oracle data, update their code to use the [`oracle contract address`,
 `job id`] and deploy their code on the chain.  
 Their contract (`Consumer`) extends the base Chainlink `Client` contract. 
 5. When the `Consumer` contract needs data, it makes a [transferAndCall][7] [invocation][13] to the `Operator` contract instance.  
@@ -134,13 +136,13 @@ The oracle contract can force Chainlink nodes to have ["skin in the game"][53] a
 High-value consumer data calls can require that Chainlink nodes bond an amount of LINK as guarantee of good behavior. In
 case of poor performance / results, this amount gets slashed by the oracle contract.
 
-### <a name="oracle_node"></a>Inside the Chainlink node 
+### <a name="oracle_node"></a>Chainlink node 
 
 From a technical PoV, the Chainlink node is a configurable process which can  
 * listen to events from (and post callbacks to) a blockchain, and 
 * execute arbitrary logic expressed as a [DOT graph][15]. 
 
-From a conceptual PoV, the best way to visualize it is with a box of lego: it contains "bricks" and "templates".  
+From a conceptual PoV, the best way to understand it is like a box of lego: it contains "bricks" and "templates".  
 * Bricks  
 These are the individual pieces of logic executed by the node, i.e. the vertices of the graph. These are [Tasks][16] 
 (for standard computations and external calls), [Adapters][17] (for bespoke computations and calls) and [Initiators][18]
@@ -150,8 +152,8 @@ These are the individual pieces of logic executed by the node, i.e. the vertices
 CRON or on a webhook call? A Job is the overall framework in which the individual data pipeline of Tasks, Adapters and 
 Initiators will execute in.  
 
-From a [product PoV][20] the reason for this technical choice (a highly configurable process) is clear.  
-Node and validator [operators'][21] skill-set leans more towards DevOps and sysadmin than development. I.e. it is easier 
+From a [product PoV][20] the reason for the technical choice (a highly configurable process) is clear.  
+Node and validator [operators'][21] skillset leans more towards DevOps and sysadmin than development. I.e. it is easier 
 for them to spin up new services based on configuration, rather than coding.  
 Zero-code deployments make a lot of sense for them. 
 
@@ -167,14 +169,13 @@ The DON could be organized in one of 2 ways:
 In this setup, described in the previous section, the DON fetches data from primary data sources after it has been 
 requested by consumers. It is useful when the consumer can tolerate a delay between requesting and receiving the data.
 * [Data Feed][23]  
-This setup is used when data needs to be timely and acted upon immediately (e.g. price tickers).  
-Here the oracle(s) in the DON provide data observations on regular intervals and these are stored in the oracle contract 
-on-chain.
+This setup is used when data needs to be timely and acted upon immediately (e.g. price tickers). Here the oracle(s) in 
+the DON provide data observations on regular intervals and these are stored in the oracle contract on-chain.
 
 **[Off-chain Reporting][24]** (OCR)  
 OCR is a lightweight [consensus protocol][26], designed to provide transparency in off-chain calculations.  
-It has the same compaction effect as [ZK rollups][27] (many data points in a single transaction), but it is transparent. 
-The result is signed by a majority of DON participants and we know which oracle has reported what.
+It has the same compaction effect as [ZK rollups][27]: many data points in a single transaction. Unlike ZK rollups, it 
+is transparent. The result is signed by a majority of DON participants and we know which oracle has reported what.
 
 The OCR protocol is working with a predetermined list of oracle nodes. It is a [PBFT][28] derivative, so it requires over 
 2/3 of participants to be well-behaved. Only the correct oracles (according to consensus) receive a payout. 
@@ -216,6 +217,7 @@ In this iteration, we will
 * The node will be configured to use our flight oracle API via an [External Adapter][76], and
 * will submit its report back to the oracle contract.
 
+Our setup looks something like this.  
 ![Local environment](../assets/images/chainlink-oracle/local-env.png)
 
 We will run our local node using K8s, orchestrated by Tilt. The Chainlink node is using Postgres as its persistent storage.
@@ -257,12 +259,6 @@ The code has been tested to work with Node `18.7.0`, so I suggest you install th
 nvm install 18.7.0
 nvm use 18.7.0
 ```
-
-### Python3
-
-We will use a Python script as our External Adapter.   
-
-Install [Python3][77] in order to execute it. 
 
 ### Infura & Etherscan APIs
 
@@ -329,8 +325,8 @@ Leave the Tilt cluster running, as we turn our attention to the...
 ## Oracle contract
 
 At the time of writing this, Chainlink defines 2 types of oracle contracts
-* [Oracle][61], which can handle data responses [up to 32 bytes in length][62]
-* [Operator][50], which can handle data responses [of arbitrary size][63]
+* [Oracle][61], which can handle data responses [up to 32 bytes in length][62] (older)
+* [Operator][50], which can handle data responses [of arbitrary size][63] (newer)
 
 Since our flight data response can be larger than 32 bytes, we create a [simple stub import][64] of the Operator contract
 for deployment.
@@ -487,7 +483,7 @@ Let's interact with the consumer contract and see the round-trip of information 
 First let's check the current values of the consumer contract member variables.
 ```bash
 INFURA_TOKEN=<YOUR_TOKEN> \
-PRIVATE_KEY=<YOUR_CONSUMER_ACCOUNT_KEY> \
+PRIVATE_KEY=<YOUR_CONSUMER_METAMASK_ACCOUNT_KEY> \
 npx hardhat read-data \
 --contract <YOUR_FLIGHT_DATA_CONSUMER_ADDRESS> \
 --network goerli
@@ -498,7 +494,7 @@ Status: , Airport: , Sched. arrival: , Actual arrival: ,
 Let's initiate a request for some data from our Oracle.<sup>[4](#footnote_4)</sup>  
 ```bash
 INFURA_TOKEN=<YOUR_TOKEN> \
-PRIVATE_KEY=<YOUR_CONSUMER_ACCOUNT_KEY> \
+PRIVATE_KEY=<YOUR_CONSUMER_METAMASK_ACCOUNT_KEY> \
 npx hardhat request-data \
 --contract <YOUR_FLIGHT_DATA_CONSUMER_ADDRESS> \
 --network goerli \
@@ -513,7 +509,7 @@ Copy the transaction hash and search for it on [Goerli Etherscan][70].
 ![Call transaction](../assets/images/chainlink-oracle/call-trx.png)  
 We can see the arguments we have passed in the *Logs* tab.  
 
-After 10-20 seconds, the Chainlink node receives the emitted `OracleRequest` event   
+After 10-20 seconds, the Chainlink node logs come alive. It has received the emitted `OracleRequest` event.   
 ![OracleRequest logs](../assets/images/chainlink-oracle/chainlink-logs.png)
 
 ...and triggers the job execution.  
@@ -526,7 +522,7 @@ After a few more seconds (allowing for the blockchain to commit the transaction)
 and confirm it has been updated.  
 ```bash
 INFURA_TOKEN=<YOUR_TOKEN> \
-PRIVATE_KEY=<YOUR_CONSUMER_ACCOUNT_KEY> \
+PRIVATE_KEY=<YOUR_METAMASK_CONSUMER_ACCOUNT_KEY> \
 npx hardhat read-data \
 --contract <YOUR_FLIGHT_DATA_CONSUMER_ADDRESS> \
 --network goerli
@@ -537,7 +533,7 @@ Status: Arrived, Airport: LHR, Sched. arrival: 2022-09-09 13:25Z, Actual arrival
 Awesome stuff!!  
 🎉🎉
 
-If you have made it this far, you can pat yourself on the back! 
+If you have made it this far, you can pat yourself on the back!  
 We have covered A LOT of ground in this tutorial. 
 
 # Discussion
@@ -549,30 +545,33 @@ Let's take a step back and compare the architectures of Chainlink vs Band Protoc
 
 From an abstract level they are very similar:  
 * An Oracle contract called by Consumers. 
-* An off-chain process listening for Oracle events
+* An off-chain process listening for Oracle events.
 * The Oracle gathering the generated data and passing them back.
 
-In terms of platform cohorts, they differ.  
-* Chainlink assumes (in fact, it forces!) that data providers (*Node Operators*) maintain their own hardware infrastructure. It assists them
- by providing the Chainlink node as a configurable and versatile process tool. Consensus if left for the underlying chain, 
- while nodes focus on data handling. In this model, the data consumer puts trust on the Node Operator's infrastructure.
+In terms of platform user cohorts/personas, they differ.  
+* Chainlink assumes (in fact, it forces!) that data providers (*Node Operators*) maintain their own hardware infrastructure.  
+ It assists them by providing the Chainlink node as a configurable and versatile process tool. Consensus is left for the underlying chain, 
+ while nodes focus on data handling. In this model, the data consumer puts trust on the Node Operator's infrastructure,
+ assisted by the incentives of the Chainlink protocol.
 * Band utilizes the existing infrastructure of *Validators* to handle data retrieval.  
-Band's platform apeals to the user cohort of independent *Oracle Developers*, not wanting to maintain their own infrastructure. 
-They develop the data retrieval code and Oracle contracts, deploy them on-chain and Validators take care of the execution. 
+Band's platform appeals to the user persona of independent *Oracle Developers*, who do not want to maintain their own infrastructure. 
+It allows them to develop the data retrieval logic and Oracle contracts, deploy them on-chain and off-load execution to Validators. 
 In this model, consensus and data quality are inherently intertwined: if you trust the chain's consensus validation, you 
 also trust the data.  
 
-If you have gone through both Band and Chainlink blog posts, you may have noticed that Chainlink poses a higher 
+Going through both Band and Chainlink blog posts, you may have noticed that Chainlink poses a higher 
 barrier-to-entry for an Oracle provider. This is a big drawback, which offerings like [Node-as-a-Service][72] are 
 attempting to cover.  
 On the other hand, the maturity of Chainlink (supported blockchains, development community) makes it
-more attractive in terms as a business proposition. In plain words, the immediate [TAM][73] is larger, therefore more 
+more attractive as a "business proposition". In plain words, the immediate [TAM][73] (number of chains) is larger, therefore more 
 requests and revenue is to be expected.   
 
 In the case of Band, the ability to allow any "unvetted" developer to become an Oracle Provider is mitigated by transparency; all
 Oracle and Data Source code lives on-chain for anyone to scrutinise. This poses a problem as there is no room for [IP][74] 
 protection. Recall how in the Band blog post, we had to effectively [reveal the API key on-chain][75]. The only mitigation would be, ...you 
 guessed it!, for the Oracle Developer to deploy their proprietary code on their own infrastructure.
+
+No free lunches, just different sets of trade-offs.
 
 # Parting thought
 
@@ -594,7 +593,17 @@ Until next time, happy coding!
 2. <a name="footnote_2"></a>This step is optional because 1) the node operator may either already have an existing Oracle 
 contract deployed, or 2) they may decide to use someone else's contract. In any but the most trivial cases, the oracle 
 contract would be deployed behind a [proxy][22] for easy upgrades. This is omitted here for brevity.  
-3. <a name="footnote_3"></a>I.e. for a job id `cebdc07d-02ab-4efc-a2e8-ebc736edd2b7`, you use the value `cebdc07d02ab4efca2e8ebc736edd2b7`.
+3. <a name="footnote_3"></a>I.e. for a job id `cebdc07d-02ab-4efc-a2e8-ebc736edd2b7`, you use the value `cebdc07d02ab4efca2e8ebc736edd2b7`.  
+If you want to change the job id *after* contract deployment, no problem!   
+You can do it with the following command  
+```bash
+INFURA_TOKEN=<YOUR_INFURA_TOKEN> \
+PRIVATE_KEY=<YOUR_CONSUMER_METAMASK_ACCOUNT_PRIVATE_KEY> \
+npx hardhat set-jobid \
+--contract <CONSUMER_CONTRACT_ADDRESS> \
+--jobid <THE_NEW_JOBID_WITHOUT_DASHES> \
+--network goerli
+```
 4. <a name="footnote_4"></a>The free tier of the AeroDataBox API only gives data for ±7 days from the current day. Keep that in mind 
 while testing. You can do a quick smoke test of the validity of your flight/date combination with `curl --url https://aerodatabox.p.rapidapi.com/flights/number/<FLIGHT>/<DATE> 
 --header 'X-RapidAPI-Host: aerodatabox.p.rapidapi.com' --header 'X-RapidAPI-Key: <YOUR_KEY>'`
