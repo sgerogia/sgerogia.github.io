@@ -281,7 +281,8 @@ We are finally ready to...
 > Photo by ThisisEngineering RAEng on Unsplash
 
 > You can find the code for this blog post in this [Github repo][37].  
-> Clone locally and open a terminal inside it. We will assume this is your working directory, unless explicitly noted so.    
+> Clone locally and open a terminal inside it. We will assume this is your working directory, unless explicitly noted so.
+> Install all dependencies with `node install`
 
 ## Launch local node
 
