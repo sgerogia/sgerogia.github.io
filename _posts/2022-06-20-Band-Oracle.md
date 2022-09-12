@@ -5,7 +5,7 @@ author: stelios
 tags: [blockchain, oracle, programming, hands-on, api]
 categories: [Blockchain, Cosmos SDK]
 featured: true
-description: "."
+description: "A deep-dive in the Band Protocol, discussing architecture, pros and cons and creating a realistic flight data Oracle."
 image: assets/images/band-protocol/shubham-dhage-UxDU0Gg5pqQ-unsplash.jpg
 ---
 
@@ -114,7 +114,7 @@ This could be useful in a number of scenarios, like an automatic flight insuranc
 
 Let's get prepared.
 
-## Data provider
+## <a name="data_provider"></a>Data provider
 
 There are a number of API flight data providers out there.   
 To keep things simple (and free) we will go with [AeroDataBox][20].
@@ -248,7 +248,7 @@ We are finally ready to...
 
 You can clone the code referenced below from [this repo][32] and build everything with `$ make all`. 
 
-## Data source
+## <a name="data_source"></a>Data source
 
 Our data source will take 2 arguments:  
 * flight number, in [IATA format][33], and 
