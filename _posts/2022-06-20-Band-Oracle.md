@@ -5,7 +5,7 @@ author: stelios
 tags: [blockchain, oracle, programming, hands-on, api]
 categories: [Blockchain, Cosmos SDK]
 featured: true
-description: "."
+description: "A deep-dive in the Band Protocol, discussing architecture, pros and cons and creating a realistic flight data Oracle."
 image: assets/images/band-protocol/shubham-dhage-UxDU0Gg5pqQ-unsplash.jpg
 ---
 

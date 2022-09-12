@@ -5,7 +5,7 @@ author: stelios
 tags: [blockchain, oracle, programming, hands-on, api]
 categories: [Blockchain, Chainlink, Ethereum]
 featured: true
-description: "."
+description: "A deep-dive in the Chainlink Protocol, discussing architecture, pros and cons and creating a realistic flight data Oracle."
 image: assets/images/chainlink-oracle/miltiadis-fragkidis-2zGTh-S5moM-unsplash.jpg
 ---
 
