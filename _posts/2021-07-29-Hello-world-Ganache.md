@@ -4,7 +4,7 @@ title: "A 'Hello world' Ethereum smart contract using Ganache"
 author: stelios
 tags: [ethereum, smart contract, blockchain]
 categories: [Ethereum, Blockchain]
-featured: true
+featured: false
 description: "The simplest possible Ethereum smart contract deployed locally using Ganache."
 image: assets/images/hello-world-ganache/american-heritage-chocolate-RQ4TXxFaaZc-unsplash.jpg
 ---
