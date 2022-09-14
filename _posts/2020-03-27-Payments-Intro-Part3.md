@@ -4,7 +4,7 @@ title: "An intro to payments: Value, liabilities and networks - Part 3"
 author: stelios
 tags: [payments, networks, payment rails, cryptocurrencies, bitcoin, libra, remittances]
 categories: [Payments, Fintec, Blockchain]
-featured: true
+featured: false
 description: "A series of pasts describing the past, present and future of payment networks: from ancient promissory notes, to the SWIFT network to upcoming blockchain-based networks."
 image: assets/images/payments/christian-holzinger-ellaVGqPgww-unsplash.jpg
 ---

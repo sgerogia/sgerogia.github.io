@@ -4,7 +4,7 @@ title: "A 'Hello world' Ethereum smart contract using Truffle"
 author: stelios
 tags: [ethereum, smart contract, blockchain]
 categories: [Ethereum, Blockchain]
-featured: true
+featured: false
 description: "Building on the previous article, we are demonstrating how to use Truffle to facilitate the deployment lifecycle of smart contracts."
 image: assets/images/hello-world-truffle/amirali-mirhashemian-V8Bc1BhXGvE-unsplash.jpg
 ---
