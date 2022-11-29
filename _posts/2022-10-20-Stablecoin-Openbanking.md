@@ -6,174 +6,205 @@ tags: [payments, openbanking, pisp, blockchain, hands-on]
 categories: [Blockchain, Ethereum, Payments]
 featured: true
 description: "."
-image: /assets/images/ethereum-stablecoin/coinwire-japan-iNOavZh6dQ8-unsplash.jpg
+image: assets/images/ethereum-stablecoin/coinwire-japan-iNOavZh6dQ8-unsplash.jpg
 ---
 
-In 
+Ensuring that stablecoins are fully backed in a transparent way is crucial for trust. This article 
+presents an automated approach based on OpenBanking. 
 
 # Stablecoins and why we need them
 
-Stablecoins are central to the crypto ecosystem.
-First let's look at the **What** stablecoins are and then examine the **Why** we need them.
+Stablecoins are central to the crypto ecosystem as a high velocity medium of exchange and unit of account. 
 
-## Types of stablecoins
+Let's take a deep dive on **What** stablecoins are and then examine **Why** we need them.
 
-As their name suggests, stablecoins offer *stability* of exchange value against another asset or currency. Say 1 
-stablecoin = 1 USD. 
+## Types of stablecoins - The What
 
-This stability can be achieved in a number of ways, which give us the different [categories][1].
+As their name suggests, stablecoins offer *stability* of exchange value against another asset or currency. E.g. 1 
+stablecoin X = 1 USD.  
+This stability can be achieved in a number of ways, which give us 4 different categories (original analysis 
+can be found [here][1]).
 
 * **"True" Stablecoins**    
-These are non-interest bearing coins. Stability is achieved by the issuer through 2 "pillars" 
-  * The issuer mints and buys back coins at par 
-  * They hold assets to back their obligation to redeem the outstanding stablecoins. These assets need to be denominated 
-    in the currency of the reference asset (to avoid currency risk), be highly liquid, and be "safe" (i.e. low risk of 
-    losses in negative market conditions).  
-Effectively, true stablecoins are a form of "narrow banks". They should hold their "coin holder reserves" separate and 
-  highly liquid, so that in a bankruptcy coin holders can be made whole.
+These are non-interest bearing coins. Stability is achieved by the issuer through 2 "pillars". Namely the issuer...   
+  * Mints and buys back coins at par, and 
+  * Holds assets to back their redeem obligation. To avoid currency risk, the assets need to be denominated in the 
+    reference currency, be highly liquid, and considered "safe". A classic example is government bonds, like US Treasuries.  
+    These assets must be held separately to protect coin holders in case of bankruptcy.  
 * **Deposit Stablecoins**    
-These are deposit claims, provable on blockchain, held in insured commercial banks. Holders are protected by the legal 
-framework governing bank deposits (e.g. capital requirements, deposit insurance,...). In this regard, deposit coins 
-preserve the current system of banking and payments, removing legacy friction. In theory (since there is no clear legal 
-framework atm), deposit coins issued by one institution, might not be recognised by others. 
+These tokens are claims against deposits held in commercial banks. Holders are protected by the legal framework governing 
+bank deposits (e.g. capital requirements, deposit insurance,...). In other words, deposit coins are a new layer on top 
+of the current system of banking and payments. Without a clear legal framework, coins issued by one bank, might not be 
+recognised by others. 
 * **Decentralised Stablecoins Backed By Crypto**    
-These stablecoins do not have a central operator, but are governed by a consensus of the users who take part in the network.
-Coins in circulation are backed by crypto-assets (e.g Dai LINK is backed by a crypto-basket). Users lock up a certain 
-amount of cryptocurrencies as collateral for borrowing DAI. Dai maintains its peg to the US Dollar, through a mechanism 
-of forced collateral liquidations, 
+These tokens do not have a central operator; they are governed by a consensus of the users who take part in the network.
+Coins in circulation are backed by crypto-assets in a mechanism of overcollateralisation and forced liquidations (e.g 
+[DAI][2] is backed by a crypto-basket). 
 * **Decentralised Algorithmic Stablecoins**  
-These coins don’t have any collateral backing their system, and they rely on algorithms and market incentives to have 
-their remain stable against a fiat currency. Though they appear elegant in theory, it is questionable how their underlying 
-primitives will work in extreme conditions. This was highlighted in a spectacular way by the Terra UST collapse LINK.  
+These coins do not have any external collateral backing their system; they rely on algorithms and market incentives to  
+remain stable against a fiat currency. Though elegant in theory, it is questionable how their underlying primitives 
+and assumptions will work in extreme conditions. This was highlighted in a spectacular way by the [Terra UST collapse][3].  
 
-## Use of stablecoins
+## Use of stablecoins - The Why
 
-If you have read my series on how global payments work
-https://sgerogia.github.io/Payments-Intro-Part1/
-https://sgerogia.github.io/Payments-Intro-Part2/
-https://sgerogia.github.io/Payments-Intro-Part3/
+If you have not yet read my 3-part series on how global payments work ([part 1][4], [part 2][5], [part 3][6]), you are 
+really missing out! Go ahead and read them, I'll wait... 😎   
 
-the world of international fiat payments is still underpinned by a network for nostro-vostro accounts with slow, 
-multi-day settlement cycles
+If you have, then you already know that the world of international fiat payments is underpinned by a network of 
+nostro-vostro accounts with slow, multi-day settlement cycles. In the 24/7/365 world of real-time blockchain settlement, 
+this will just not cut it. 
 
-In the 24/7/365 world of near real-time blockchain settlement, this will just not cut it
-
-Stablecoins are an IOU 
-real, in the case of true & backed s/c
-conceptual, in the case of crypto-backed and algorithmic s/c
-Digital unit of account
-to massively accelerate the velocity of fiat money to match that of native digital assets  
+Stablecoins are a blockchain-native unit of account and medium of exchange. It massively accelerates the velocity of fiat 
+money to match the velocity of other blockchain digital assets.  
 
 # Intro to OpenBanking
 
-Have gone into great-length in my 2-part series
-https://sgerogia.github.io/OpenBanking-Part1/
-https://sgerogia.github.io/OpenBanking-Part2/
+Put in very simple terms, OpenBanking is a financial and technical standard.   
+It allows a bank customer to  
+* securely authorise third parties, 
+* through an API 
+* to perform all activities said customer would have to logon to the bank's portal to perform.
 
-<insert diagram here>
+I have covered the internals of OpenBanking in great detail in my 2-part series ([part 1][7], [part 2][8]).  
+Take some time to go through them, as we will be using some key concepts in our approach.
 
 # Marrying OpenBanking & web3
 
 ![Marriage](../assets/images/ethereum-stablecoin/foto-pettine-IfjHaIoAoqE-unsplash.jpg)
 > Photo by Foto Pettine on Unsplash
 
+Like any system and product, we need to start with a...
+
 ## Problem 
-USDT and to some extent USDC belong to the true stablecoin category  
-* On-ramp only for large investors ($100k deposit minimum)
-* Off-ramp for accredited people (purely discretionary)
-https://cryptoslate.com/you-can-redeem-tether-usdt-11-on-tether-to-but-theres-a-catch/
-* Most important Asset audit and verification is manual and constant source of FUD w.r.t quality of assets 
 
-An ideal solution would automate away the need for manual processing and auditing 
-note: In true narrow bank form part of USDT/C's revenue stream is arbitraging between offering zero yield (for depositors)
-and receiving interest from converting USD balances into interest-bearing instruments (e.g. bonds) 
-This would make the process of validating balances self-evident on-chain
+The current stablecoin market is dominated by a few big players, namely USDT, USDC and BUSD. 
+All three of them belong to the true stablecoin category above<sup>[1](#footnote_1)</sup>. Namely    
+* On-ramp only for large investors (E.g. $100k deposit minimum for USDT)
+* Off-ramp for accredited people (sometimes [discretionary][9]) 
 
+Most importantly and to this day, the lack of transparency in the whole minting and redemption process is a constant 
+[source of FUD][10]. 
+
+An ideal solution would  
+* automate away the need for manual processing of fiat payments, minting and redemption of tokens, and 
+* be making all interactions visible / provable on-chain.
+
+Keeping things on-chain, would make the process of externally validating the protocol's volumes trivial.
 
 ## Challenges
 
-OpenBanking is built on top of OAuth2, which has a fundamental assumption: end-to-end secure channel
-This is crucial as the OB messages carry sensitive information
-note: One example is bank account details which is PII and could be used in banking fraud
-Another example is customer consent authorisation links (link needed) and consent auth. tokens 
-Though not explicitly documented, in most banks' cases these are single use. A malicious actor intercepting them could 
-just make a failed attempt just to "consume" them and invalidate an otherwise valid flow
+OpenBanking is built on top of [OAuth2][11], inheriting a fundamental assumption: an end-to-end secure channel, namely HTTPS.  
+This is crucial as the OpenBanking messages carry sensitive information<sup>[2](#footnote_2)</sup>.
 
-This comes at a stark contrast with blockchains making all information visible to everyone by default
-
-We will need to consider how to use available primitives to address these shortfalls 
+This comes at a stark contrast with blockchains, where transparency of information underpins trust. 
+We will need to consider how to use available cryptographic primitives to address this challenge.
 
 ## Solution 
 
-Note: this is public key authenticated encryption first introduced in NaCl https://nacl.cr.yp.to/valid.html
-Already supported by Metamask on the browser-side LINK and by a wide array of languages (Python, Golang,...) on the 
-server-side  
+The following diagram gives an overview of our protocol's functionality.
 
 ![OpenBanking Stablecoin](../assets/images/ethereum-stablecoin/ob-stablecoin.png)
 > The minting flow of our OpenBanking dApp
 
-<Describe the steps and outline>
+The smart contract has one or more "owners", which are OpenBanking regulated [TPPs][13]. The TPPs publish their 
+encryption key in the contract. See a detailed encryption discussion in the next section.
 
-TPP derives public encryption key and puts it in published contract
-This could derive from the TPP's chain private key or, even better, have a separate encryption key pair (e.g. located 
-in an HSM)
-
-
-mintRequest: Send public key in the payload
+1. The Payer launches the dApp and initiates a `mintRequest` method call.  
+  The requested fiat `amount` is visible on-chain, while the following payload is encrypted with the TPP's public key.   
+```json
 {
-institutionId: institutionId,
-sortCode: sortCode,
-accountNumber: accountNumber,
-name: name,
-publicKey: myPubKey
+  "institutionId": "Payer's bank",
+  "sortCode": "UK branch identifier",
+  "accountNumber": "Self explanatory",
+  "name": "Account holder name",
+  "publicKey": "Payer's public encryption key"
 }
+```
+2. The contract emits a `MintRequest` event.   
+  The TPP uses their private key to decrypt the payload, and...
+3. Creates an initial payment consent with the payer's bank.  
+  The bank responds with an authorisation URL, for the Payer to approve.
+4. The TPP makes an `authRequest` method call.  
+  The payload is encrypted with the Payer's public key (from the previous message) and looks like this  
+```json
+{
+  "url": "Auth'n URL for the Payer",
+  "consentId": "Bank-generated identifier for this consent"
+}
+```
+5. The smart contract emits an `AuthRequest` event and the Payer's dApp decrypts it with its private key.
+6. The dApp redirects the Payer to the consent authorisation screen using the URL, and...
+7. The Payer authorises the payment, getting back a unique authorisation code.
+8. The dApp encrypts the code with the TPP's public key and makes an `authGranted` smart contract call. The payload looks like this  
+```json
+{
+  "consentCode": "Authorisation code",
+  "publicKey": "Payer's public encryption key"
+}
+```
+9. The TPP receives the `AuthGranted` event, decrypts the payload and...
+10. Uses it to contact the bank and execute the payment. Once the payment is confirmed settled (polling or callback), then...
+11. Call the smart contract's `mint` method, crediting the Payer's address with the right amount of new tokens (minus fees).
 
-Receive MintRequest: Use private key to decrypt, store user's public key for all subsequent user-bound encrypted 
-payloads (e.g. authRequest) 
+### Encryption discussion
 
+Client-side wallets are all about isolating and protecting user private keys. The Metamask wallet supports [asymmetric 
+encryption/decryption][14], by exposing [`eth_decrypt`][15] and [`eth_getEncryptionPublicKey`][16]<sup>[3](#footnote_3)</sup>.  
+Digging a bit deeper, we see that Metamask is using the [eth-sig-util library][17] for all its cryptographic actions. 
+We can also see that the Metamask team has not re-invented the wheel, but rather chose to [implement][18] the [NaCl secret key][19].  
+That is great, as we can find good, compatible NaCl implementations in all the major languages. 
 
+The last thing to consider are the details of the interaction.  
+The Payer has no way of knowing the TPP's public encryption key upfront<sup>[4](#footnote_4)</sup>, so the TPP needs to 
+publish it somewhere. In this instance, we will choose a read-only field of the smart contract.  
+In an industry-grade setup, the TPP would regularly rotate their encryption key and keep it in an [HSM][22].
 
+We also need a way to inform the TPP of the Payer's encryption key.  
+To avoid leaking information, we choose to encrypt it as part of the payload. In a more robust setup, the Payer's dApp
+could choose to generate session private/public encryption, with the downside that old TPP messages cannot be retroactively 
+decrypted once the session key is discarded.
 
 # Let's get coding
 
 ![Some coding-y image](../assets/images/ethereum-stablecoin/james-harrison-UVMPVIRCF5w-unsplash.jpg)
 > Photo by James Harrison on Unsplash
 
-> The code for this blog post is in repository [hello-stablecoin][].
+> The code for this blog post is in repository [hello-stablecoin][23].  
 > Each section below has a corresponding code branch (`v1`, `v2` etc) with the progress of the project until that point. 
 > You can switch to that branch and follow along at your pace.
 
 ## v1 - Setup and smart contract minting
 
-Going to have everything in a monorepo
-Everything related to smart contract will be in sub-folder `/chain`
+We are going to have all our code in a single repo.  
+Everything related to the smart contract will be in sub-folder `/chain`.  
 
-First installed right Node version.
-Then initial project skeleton was created using Hardhat (link)
-In your case you can jusat download all dependencies with 
+We start by installing the correct Node version and an initial Typescript [Hardhat project skeleton][24] by scavenging 
+from our [previous project][25].  
+You can install all dependencies by running  
 ```
+cd chain
 nvm install 18.7.0
 nvm use 18.7.0
 npm install
 ```
 
-Created an initial config file (https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/hardhat.config.ts) by scavenging from our [previous project] https://github.com/sgerogia/hello-chainlink/blob/main/hardhat.config.js
+We created the outline of our smart contract using [OpenZeppelin's wizard][26].  
+Namely, our contract is  
+* a fungible token (ERC-20) 
+* mintable & burnable (the whole point of this exercise!) 
+* pausable (in case of an emergency), and 
+* ownable (as only the TPP should be able to call certain lifecycle methods)
 
-created the outline of our smart contract using OpenZeppelin's wizard https://docs.openzeppelin.com/contracts/4.x/wizard
-Note: Our contract is ERC-20, mintable & burnable (the whole point of this exercise!), pausable (in case of emergency) and ownable (as only the TPP should have full control)
+Our additions to the contract are  
+* Disable the public [`mint` method][27]; we want this to happen via the lifecycle, not explicitly.
+* Expose the TPP's [public key][28] for clients to use for encryption. 
+* Create a [map of mint commitments][29], to keep track and reduce spam.
+* Define the payload of the different [events][30] that the contract will emit. Notice that we have made some fields 
+  `indexed` to aid with event retrieval on the client side.
+* Define the logic and controls of the 4 smart contract methods: [`mintRequest`][31], [`authRequest`][32],
+  [`authGranted`][33], [`paymentComplete`][34].
 
-Our additions to the contract are 
-* Disable the public mint method (https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L77)
-* Expose the TPP's public key for clients to use for encryption https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L25
-* Create a map of mint commitments (https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L35)
-* Define the payload of the different events that the contract will emit (https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L42-L60)
- Notice that we have made some fields `indexed` to aid with event retrieval
-* Define the logic and controls of the 4 smart contract methods (mintRequest https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L95)
- authRequest https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L113
- authGranted https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L132
- paymentComplete https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L147
-
-We can now compile out contract to check for errors `make compile-contract`
+We can now compile out contract to check for errors: `make compile-contract`
 
 ## v2 - Contract unit tests 
 
@@ -182,12 +213,6 @@ are split in 3 groups
 * basic functionality, like contract name and pausing (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_base_test.ts)
 * end-to-end logical flow (method and event payload) (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_e2e_flow_test.ts)
 * encryption/decryption, simulating the behaviour of the user's wallet and TPP's process (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_mintRequest_test.ts)
-
-For encryption/decryption we need to work with what is supported by the Metamask wallet. This is what our end users 
-will use once we have our UI in-place. 
-We will use the [eth-sig-util library] https://metamask.github.io/eth-sig-util/index.html  
-Under the hood it supports `Curve25519, XSalsa20 and Poly1305` https://github.com/MetaMask/eth-sig-util/blob/v5.0.0/src/encryption.ts#L39 as defined in NaCl
-
 
 Reader can extend the unit test suite as an exercise to cover edge cases etc 
 
@@ -200,6 +225,8 @@ To facilitate smoke testing in a remote chain, we can utilize Hardhat's task plu
 We have created a number of tasks to allow us to emulate the steps of the cycle (plus a few more generic ones)
 For convenience they have a numeric prefix to their name so that they appear first in the Hardhat list as well as indicate
 the correct order of calling
+
+(image of task list)
 
 They are created in pairs
 one to call the smart contract method (e.g. `mintRequest`) 
@@ -328,8 +355,8 @@ Both of these will make testing easier (but, obviously, are not available in a p
 
 ![Reduced security](../assets/images/ethereum-stablecoin/reduced-security.png)
 
-You can use the auto-provisioned data or you can wipe them out and upload the attached test data file. 
-It contains only 2 users with accounts: *John Doe* (payer) and *Provable GBP Limited* (receiver)
+You can use the auto-provisioned data or you can wipe them out and upload the test data file accompanying this article (LINK NEEDED). 
+The test data file contains only 2 users with accounts: *John Doe* (payer) and *Provable GBP Limited* (receiver)
 
 At this point you can manually verify the end-to-end setup of the sandbox account or skip to the next section. 
 
@@ -499,7 +526,7 @@ the transaction took place and the business account balance has increased (i.e. 
 
 </details>
 
-## v4 - TPP client
+## v4 - TPP bank client
 
 Create a new folder to hold our Go code  
 ```bash
@@ -516,7 +543,12 @@ End-to-end integration test verifies correct functionality of the client
 The integration test has hard-coded account numbers from our test data set
 Here we take advantage of the programmatic approval consent offered by the Natwest sandbox
 
-## v5 - ETH client 
+## v5 - Server-side cryptography
+
+<Explain NaCl and how it ties up with private keys>
+<Different elliptic curves>
+
+## v6 - ETH client 
 
 `go get github.com/ethereum/go-ethereum`
 
@@ -531,70 +563,84 @@ cat ../chain/artifacts/contracts/ProvableGBP.sol/ProvableGBP.json \
       --bin ../chain/artifacts/contracts/ProvableGBP.bin
 ```
 
+TODO 
+Explain code construct
+
+Execute integration test
+
 
 We are finally ready for an...
 
 ## End-to-end test
 
-Let's build the binaries and run the local server.  
+For this we will be using a different pair of keys as payer and TPP.  
+
+Follow the instructions in Annex 1 to setup an Infura account and a correctly set up Metamask, pointing to the Goerli testnet.
+
+Follow the instructions (Infura & Metamask) in the Chainlink blog post (https://sgerogia.github.io/Chainlink-Oracle/#annex1) to set yourself up. 
+
+We will deploy our contract to the Goerli testnet.       
 ```bash
-make build-cli
-make run-local-http
+PRIVATE_KEY=0x<TPP_PRIVATE_KEY> \
+INFURA_TOKEN=<INFURA_TOKEN> \
+npx hardhat deploy --network goerli --tags gbp
+```
+Note down the new contract address; we will need it soon!
+
+Make sure you point your Metamask to the Goerli network  
+![Change to Goerli network](../assets/images/ethereum-stablecoin/change-network.png)
+
+...and make Metamask "aware" of our token (link `Import tokens`)    
+![Import PGBP token](../assets/images/ethereum-stablecoin/import-token.png)
+
+Let's build the Go binary.   
+```bash
+make build-client
 ```
 
-Goa has generated a full-fledged API client out-of-the-box. Each API service (`token`, `math`) has become a separate 
-CLI sub-command. You can see its usage with  
+Edit the correct values in `tpp-client.toml`, like `ContractAddress`, `ProviderUrl`,... Pay attention that we will 
+be using the websocket API, as we need event notifications.
+
+...and run the local server using the private key . Note how we omit the `0x` key prefix here.  
 ```bash
-./server-cli token --help
-./server-cli math --help
-./server-cli math mul --help
+PRIVATE_KEY=<TPP_PRIVATE_KEY> \
+  ./tpp --config ./tpp-client.toml 
 ...
+{"level":"info","ts":1668771551.527633,"caller":"cmd/main.go:53","msg":"Listening for on-chain events..."}  
 ```
 
-Let's get a token with the CLI.    
-> In this section we also show the equivalent cURL side-by-side.
-
+Let's make a mint request as a payer. You may need to change the account details for your Natwest sandbox dataset.   
 ```bash
-./server-cli token auth --body '{ "password": "password", "username": "user" }'
+INFURA_TOKEN=<INFURA_TOKEN> \
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
+npx hardhat 1-mint-request \
+--contract <CONTRACT_ADDRESS> \
+--network goerli \
+--amount 123 \
+--institution-id natwest-sandbox \
+--sort-code 500000 \
+--account-number 12345601 \
+--name "John Doe"
 
-curl -X POST http://localhost:8080/auth \
--H 'Content-Type: application/json' \
---data-binary '{ "password": "password", "username": "user" }'   
+Initiating mintRequest for 123 PGBP ...
 ```
 
-Let's try to multiply some numbers.   
-```bash
-./server-cli math mul \
-  --numbers '["4", "3.543", "-2"]' \
-  --token "TOKEN_FROM_THE_PREVIOUS_STEP"
-  
-curl http://localhost:8080/mul/4,3.543,-2 \
--H 'Authorization: Bearer TOKEN_FROM_THE_PREVIOUS_STEP'  
-```
+After a couple of seconds, we can see the TPP process coming to life, after receiving the event.  
+![MintRequest event](../assets/images/ethereum-stablecoin/mint-request-event.png)
 
-Finally, let's submit a JSON document for addition of its numeric elements.  
-```bash
-./server-cli math sum \
-  --token "TOKEN_FROM_THE_PREVIOUS_STEP" \
-  --body '{"a":{"b":4},"c":2, "d":[1, 3]}' 
+We can also track the contract interactions on Goerli Etherscan; transactions, events and event fields.  
+![Etherscan contract](../assets/images/ethereum-stablecoin/etherscan-contract.png)
 
-curl -X POST http://localhost:8080/sum \
--H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VyIiwiZXhwIjoxNjY0ODgwNTY4LCJqdGkiOiJmZDQ3Zjc2MC0xN2Q3LTRlNDYtYjdjZi0yMWM1MzBjNzc0NzgiLCJpYXQiOjE2NjQ4NzY5NjgsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MCIsInN1YiI6InVzZXIifQ.efisAM2XQdbmuNPRoYffYewH636CNgCLNh4tecnkXSGygfPvNrQhXpkeM3zA731j2VIIJqss8NeDcXPxQFbwHDdcxqmt5w0b-onNuGCFf2u7W55rWANNOCMjke5B4QSCop9waVV-eXSF70yIXPT5iNKD7SIlOv4FrNzkvNye5w4VCg7g-oZovjsZdmaLN2SfLdzyxXTBLw4TCst5SFiVzzcyhPMOevnX5mSv6p0uI_iPCO0GhdLyW20-HghazSRDI6xoj5vepuoP5_fCPdpwZUhsO75o_pl66IENhBmiovEsvpbEV5qYc0sXVKH4yk6Jcis6OCbHL3gQSVB97Sc4xTSmGkEkGWvbdyf_j4uBKRE8SVMZd93EqDJkze5Os7umKP5Nw8ws4JLuoyWab-kM1wNwTJmGNFWuhC_Tfql4blDKFZPIZOF-Yqqj67QP5f1nQ9pW1GNerbiPhTQ4noUNRtyokruyFjBhWql_0ebYf94xesvJMIa93GnVoIlSuuX9' \
---data-binary '"{\"a\":{\"b\":4},\"c\":2, \"d\":[1, 3]}"'
-```
 
-This last example allows us to see how the CLI client might "sweep under the rug" some Goa internals.  
-In this case the data-type of the [`/sum` payload][26] (`String`) uses Goa's default [codec mechanism][27]. Namely, a `String` 
-representation must be surrounded by double quotes. A nice improvement would be to implement a custom codec to support 
-our unstructured document as JSON, without the need for quote escaping.
+
 
 ## Next steps
 
-Not the optimal way
+Not the optimal way by any stretch of the imagination 
 Could have shorten the interaction by 1 round-trip
 Have the redirect to our server and pick up the consent authorisation code immediately 
 
-<DIAGRAM HERE>
+<DIAGRAM HERE/>
 
 The response from the bank gives us the original consent id which we can use as a correlation identifier
 
@@ -616,12 +662,102 @@ Not the optimal
 
 # Footnotes
 
-1. <a name="footnote_1"></a>This section is using UML notation only for ease of expression and understanding. The actual 
-Goa implementation uses different naming and relations internally. 
-2. <a name="footnote_2"></a>E.g. `[1,2,3,4]` and `{"a":6,"b":4}` both have a sum of 10, `[[[2]]]` and `{"a":{"b":4},"c":-2}`
-  both have a sum of 2, etc
-3. <a name="footnote_3"></a>This is a one-off command. It generates files which you will be editing in the following sections. 
+1. <a name="footnote_1"></a>In true narrow bank form part of USDT/C's revenue stream is arbitraging between offering zero 
+yield (for depositors) and receiving interest from converting USD balances into interest-bearing instruments (e.g. bonds)
+2. <a name="footnote_2"></a>One example is bank account details which is PII and could be used in banking fraud. Another 
+   example is customer [consent authorisation links][12] and consent auth. tokens.   
+   Though not explicitly documented, in most banks' case these are single use. A malicious actor intercepting them could
+   just make a failed attempt just to "consume" them and invalidate an otherwise valid customer flow.
+3. <a name="footnote_3"></a>Even though there are no vulnerabilities, these methods are marked as deprecated. That is 
+   something to keep in mind in this approach. 
+4. <a name="footnote_4"></a>All blockchains make account public keys visible/retrievable for signature verification. 
+   However, even though originating from the same private key, the public encryption key will be different as it is 
+   derived from a [different elliptic curve][20] (e.g. [ECDSA][21] for Ethereum).     
 
 
+# <a name="annex1"></a>Annex 1: Installing Metamask, connecting to Goerli, using faucets, etc 
 
-  [1]: https://www.globalstablecoins.co.uk/
+> HERE BE DRAGONS!! 🐉🐉  
+> Be extremely careful, which network you are connected to AT ALL TIMES when in test/development. Sending mainnet ETH to
+> a testnet address will result in loss of funds.
+
+*This short guide assumes you are starting from scratch.*    
+*If you already have Metamask installed, then you can just skip to the relevant parts.*
+
+Let's start by installing the Metamask browser extension from the [official website][7].
+* It launches a setup wizard. Create a new wallet.    
+  ![New wallet](../assets/images/hello-world-nft/metamask-new.png)
+
+* Your local wallet will be password-protected. Select a password.  
+  ![Wallet password](../assets/images/hello-world-nft/metamask-pwd.png)
+
+* Metamask is now installed in your browser's extensions panel.  
+  ![Metamask installed](../assets/images/hello-world-nft/metamask-installed.png)
+
+* Select the Goerli network from the drop-down.  
+  If you cannot see Goerli, you may need to toggle showing more networks.   
+  ![Select Goerli](../assets/images/chainlink-oracle/select-goerli.png)
+
+* Next up is funding our Metamask with testnet ETH.  
+  Select one of the [Goerli faucets][56] and use your Metamask account address to receive.  
+  ![Copy address](../assets/images/chainlink-oracle/copy-address.png)
+
+* We will use 2 accounts from the same wallet, pretending we are different actors.  
+  Go to the `Account Details` of the default Metamask account. Click the pencil and rename to `TPP` so we know what
+  is what.  
+  ![Account details](../assets/images/chainlink-oracle/account-details.png)
+
+* Finally, create a 2nd account. We will use it as the owner of the Oracle consumer contract.  
+  Name the account as `Payer` or similar.
+  ![New account](../assets/images/ethereum-stablecoin/create-account.png)  
+  You can transfer some GoerliETH between the 2 accounts, or fund directly from a faucet.  
+
+* To view an account's private key (used for interacting with the contracts), we go to their details.  
+  ![Account details](../assets/images/chainlink-oracle/account-details.png)  
+  Then we choose to `Export`.  
+  ![Export key](../assets/images/ethereum-stablecoin/export-key.png)  
+  Export the keys for both `TPP` and `Payer`.
+
+* Check your balance on both accounts; we are all set for testing.    
+  ![Credited assets](../assets/images/chainlink-oracle/assets.png)
+
+* Once the `ProvableGBP` contract is deployed to Goerli, we will need to make Metamask aware of the new token to track.  
+  Click on the `Payer` account and add the contract's address (link `Import token`)  
+  ![Import token](../assets/images/ethereum-stablecoin/import-token.png)
+
+
+  
+   [1]: https://www.globalstablecoins.co.uk/
+   [2]: https://marketrealist.com/p/dai-stablecoin-explained/
+   [3]: https://www.calebandbrown.com/blog/a-week-of-terra-ust-and-luna-collapse-explained/
+   [4]: https://sgerogia.github.io/Payments-Intro-Part1/
+   [5]: https://sgerogia.github.io/Payments-Intro-Part2/
+   [6]: https://sgerogia.github.io/Payments-Intro-Part3/
+   [7]: https://sgerogia.github.io/OpenBanking-Part1/
+   [8]: https://sgerogia.github.io/OpenBanking-Part2/
+   [9]: https://cryptoslate.com/you-can-redeem-tether-usdt-11-on-tether-to-but-theres-a-catch/
+   [10]: https://www.investing.com/news/cryptocurrency-news/is-there-any-truth-about-the-fud-panic-call-on-usdt-2940382
+   [11]: https://oauth.net/2/
+   [12]: https://ob.docs.wso2.com/en/latest/learn/consent-authorization-intro/#!
+   [13]: https://my.cfte.education/courses/what-is-a-TPP
+   [14]: https://www.sciencedirect.com/topics/computer-science/asymmetric-cryptography
+   [15]: https://docs.metamask.io/guide/rpc-api.html#eth-decrypt-deprecated
+   [16]: https://docs.metamask.io/guide/rpc-api.html#eth-getencryptionpublickey-deprecated
+   [17]: https://metamask.github.io/eth-sig-util/latest/index.html
+   [18]: https://github.com/MetaMask/eth-sig-util/blob/v5.0.0/src/encryption.ts#L39
+   [19]: https://en.wikipedia.org/wiki/NaCl_%28software%29#Secret-key_cryptography
+   [20]: https://en.wikipedia.org/wiki/Elliptic-curve_cryptography
+   [21]: https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm
+   [22]: https://en.wikipedia.org/wiki/Hardware_security_module
+   [23]: https://github.com/sgerogia/hello-stablecoin
+   [24]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/hardhat.config.ts
+   [25]: https://github.com/sgerogia/hello-chainlink/blob/main/hardhat.config.js
+   [26]: https://docs.openzeppelin.com/contracts/4.x/wizard
+   [27]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L77
+   [28]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L25
+   [29]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L35
+   [30]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L42-L60
+   [31]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L95
+   [32]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L113
+   [33]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L132
+   [34]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L147
