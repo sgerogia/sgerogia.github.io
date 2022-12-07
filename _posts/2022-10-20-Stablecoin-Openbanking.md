@@ -208,56 +208,71 @@ We can now compile out contract to check for errors: `make compile-contract`
 
 ## v2 - Contract unit tests 
 
-Unit tests at this stage provide some basic coverage 
-are split in 3 groups
-* basic functionality, like contract name and pausing (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_base_test.ts)
-* end-to-end logical flow (method and event payload) (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_e2e_flow_test.ts)
-* encryption/decryption, simulating the behaviour of the user's wallet and TPP's process (https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_mintRequest_test.ts)
+It's time to do some unit testing of our contract.  
+Our tests at this stage provide some basic coverage and are split in 3 groups
+* [basic functionality][35], like contract name and pausing 
+* end-to-end [logical flow][36] (testing method and events payload) 
+* [encryption/decryption][37], simulating the behaviour of the user's wallet and TPP's process 
 
-Reader can extend the unit test suite as an exercise to cover edge cases etc 
+We can run the test suite with `make test-contract`.
+
+These unit tests serve as an initial example of using ether.js and Hardhat's embedded chain runner to test smart contracts.  
+However they are far from providing a complete coverage of functionality. The reader can easily extend them as an 
+exercise to cover additional use cases and edge cases. 
 
 ## v3 - Manual testing 
 
+(IMAGE FOR TESTING)
+
+Now that we have tested the smart contract with unit tests in embedded mode, the next step is to test against a separate
+chain. For this we will use Ganache, running a single-node chain locally.
+
 ### Hardhat tasks 
 
-To facilitate smoke testing in a remote chain, we can utilize Hardhat's task plugin mechanism (https://hardhat.org/hardhat-runner/docs/advanced/create-task)
+To facilitate our smoke testing, we will utilize Hardhat's [task plugin][38] mechanism.c
 
-We have created a number of tasks to allow us to emulate the steps of the cycle (plus a few more generic ones)
-For convenience they have a numeric prefix to their name so that they appear first in the Hardhat list as well as indicate
-the correct order of calling
+In the `v3` branch, under folder `tasks`, we have created a number of tasks to allow us to emulate the different steps 
+of the interactions (plus a few more generic ones). For convenience, the mint-related tasks have a numeric prefix to 
+their name. This way they will appear first in the Hardhat list as well as indicate the correct order of invocation.  
+```bash
+$ npx hardhat
+Hardhat version 2.12.2
+...
+AVAILABLE TASKS:
 
-(image of task list)
+  1-mint-request    	Triggers a mintRequest for PGBP
+  2-get-mint-request	Receive the latest MintRequest message for PGBP
+  3-auth-request    	Triggers an authRequest for PGBP, in response to a mintRequest
+  4-get-auth-request	Receive the latest AuthRequest message for PGBP
+...
+```
 
-They are created in pairs
-one to call the smart contract method (e.g. `mintRequest`) 
-one to receive the event on the other side and decrypt its payload (e.g. `getMintRequest`)
+You can get help for any task with: `npx hardhat help 1-mint-request`
 
-You may notice that not all actions in the cycle have been implemented. 
-This could be a nice exercise for the reader
+The tasks correspond to the interactions back to the original diagram and are created in pairs: one to call the smart 
+contract method (e.g. `mintRequest`) and one to receive the event on the other side and decrypt its payload (e.g. 
+`getMintRequest`)
+
+Last thing to note is the contract deployment script, under folder `deploy`. 
 
 ### Ganache deployment 
 
-We will use Ganache as a convenient local Ethereum chain 
-
-We create a new workspace (i.e. chain instance), making sure the settings match our Harhdat config file.
-
+Switching to Ganache, we create a new workspace (i.e. chain instance), making sure the settings match our Harhdat config 
+file.  
 ![Ganache settings](../assets/images/ethereum-stablecoin/ganache-settings.png)
 
-We pick 2 of the auto-created accounts and take note of their private keys and account ids.
-One as the smart contract owner (TPP) and one as the user (bank account holder)
-
+We pick 2 of the workspace auto-created accounts and take note of their private keys and account address. We will use one 
+as the smart contract owner (TPP) and one as the Payer (bank account holder).  
 ![Ganache account keys](../assets/images/ethereum-stablecoin/ganache-keys.png)
 
-Take a copy of the account private keys, we will use them below prefixed with `0x`. 
-I.e. if the Ganache private key is `123abc`, we will be using `0x123abc`.
+Take a copy of the account private keys; we will use them below prefixed with `0x`. I.e. if the Ganache private key is 
+`123abc`, we will be using `0x123abc`.
 
-With Ganache running, we deploy the smart contract  
+With Ganache running, we deploy the smart contract. The tag auto-selects our contract deployment script.      
 ```bash
 PRIVATE_KEY=0x<TPP_PRIVATE_KEY> \
 npx hardhat deploy --network ganache --tags gbp
 ```
-
-The `tags` switch helps us select the deployment script(s) from the `deploy` folder (link in our case only one)
 
 We can verify the contract deployment in Ganache.  
 ![Ganache contract deployment](../assets/images/ethereum-stablecoin/ganache-deploy-trx.png)
@@ -266,11 +281,12 @@ Take note of the contract address, as we will need it for our...
 
 ### End-to-end testing
 
-We can now use the tasks we have created to emulate the flow between the 2 accounts: user and TPP.
+We can now use the tasks we have created to emulate the flow between the 2 accounts: Payer and TPP. We do not have to 
+use any real values at this point, it is all about testing the flow of the deployed contract.
 
 Start by having the user make a `mintRequest`    
 ```bash
-PRIVATE_KEY=0x<USER_PRIVATE_KEY> \
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
 npx hardhat 1-mint-request \
     --contract <CONTRACT_ADDRESS> \
     --network ganache \
@@ -281,20 +297,16 @@ npx hardhat 1-mint-request \
     --name "John Doe"
 ```
 
-The TPP's Ethereum client process needs to receive the message. 
-Since we have not developed it yet, we need to do it manually. The `getMintRequest` action prints and decrypts the message.  
-To demonstrate the decrypted values, the command prints an example consent creation call for Natwest's sandbox bank.
-note: For more details, on how to set up and use Natwest's sandbox take a look at the blog post LINK 
+The TPP's Ethereum client process needs to receive the message. Since we have not developed it yet, we need to do it 
+manually.  
+The `getMintRequest` action decrypts the event with the `PRIVATE_KEY` and prints the payload.  
 ```bash
 PRIVATE_KEY=0x<TPP_PRIVATE_KEY> \
 npx hardhat 2-get-mint-request \
     --contract <CONTRACT_ADDRESS> \
     --network ganache \
-    --account <USER_ACCOUNT>
-```
+    --account <PAYER_CHAIN_ACCOUNT>
 
-The command prints out the message contents, after decrypting the payload with the `TPP_PRIVATE_KEY`.  
-```text
 Listening for MintRequest for PGBP (contract 0x... ) on network ganache
 MintRequest received
         RequestId 0xbff95a362c6b6c2577c5a0dd76ac3f645b2fdda2bcacd5c3fc351916a4d44954
@@ -304,13 +316,10 @@ MintRequest received
 MintRequest encr. payload
 ...
         Public key CgTZFRFIToxlhoxMkexzbhNiTgSkIkqeI2egzp0kHVA=
---------------------------------------------------
 ```
-It is important here to note how the encrypted payload is decrypted using the receiver's (TPP) private key.
-Inside it contains the user's encryption public key. 
-The TPP must use this for all subsequent user-bound messages.
 
-You can continue the flow with the other 2 implemented tasks.
+It is important to note the Payer's encryption public key. The TPP must use this for all subsequent Payer-bound interactions.
+We can continue the flow with the other 2 implemented tasks.
 
 Sending the authorisation request from the TPP to the user.   
 ```bash
@@ -320,52 +329,62 @@ npx hardhat 3-auth-request \
     --network ganache \
     --request-id <ORIGINAL_REQUEST_ID> \
     --public-key <PUBLIC_KEY_FROM_MINT_REQUEST> \
+    --consent-id <SOME_CONSENT_ID> \
     --url "https://bank.com/some-url/to/authorise/consent/"
 ```
 
 ...and receiving it on the other side.  
 ```bash
-PRIVATE_KEY=0x<USER_PRIVATE_KEY> \
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
 npx hardhat 4-get-auth-request \
     --contract <CONTRACT_ADDRESS> \
     --network ganache \
-    --account <USER_ACCOUNT>
+    --account <PAYER_CHAIN_ACCOUNT>
 ```
 
-It will be an excellent exercise for the reader to continue implementing the remaining missing tasks
-5-auth-granted
-6-get-auth-granted
-7-payment-complete 
-and verify the increase in total supply (i.e. tokens being minted) with `npx hardhat total-supply`
+Then notify the TPP of the consent authorisation code.  
+```bash
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
+npx hardhat 5-auth-granted \
+    --consent-code <SOME_STRING> \
+    --contract <CONTRACT_ADDRESS> \
+    --request-id <ORIGINAL_REQUEST_ID>
+```
 
+It will be an excellent exercise for the reader to continue implementing the remaining missing tasks: `6-get-auth-granted`,
+`7-payment-complete`. Then verify the increase in total supply (i.e. tokens being minted) with `npx hardhat total-supply`
 
 ## Brief pause - Sandbox bank accounts
 
-Will use the Natwest sandbox portal 
-to have better control and overview of the money flows 
-A detailed overview of the sandbox and its basic concepts can be found here https://sgerogia.github.io/OpenBanking-Part2/
-If you are not familiar it would be very helpful to take some time to read the basic concepts
+![Brief pause](../assets/images/ethereum-stablecoin/claudio-schwarz-YxywelymVuE-unsplash.jpg)
+> Photo by Claudio Schwarz on Unsplash
 
-To keep things simple, we will use basic security (username & password) in our application
+Since our solution is based on OpenBanking, we need to use a testing platform. We will go for the [Natwest sandbox][39].  
+It gives us a realistic client e-banking view, to better visualise the money flows.   
+> A detailed overview of the sandbox and its basic concepts can be found in my [hands-on OpenBanking blog post][8]. If you 
+> are not familiar, it would be very helpful to take some time to read the basic concepts.
+
+To keep things simple, we will use basic security (username & password) in our application.   
 ![Create sandbox app](../assets/images/ethereum-stablecoin/create-sandbox-app.png)
 
 Scroll down to find the `Payment Initiation 3.1.7` API and configure it to have *<reduced> security* and *programmatic 
-approval*. 
-Both of these will make testing easier (but, obviously, are not available in a production environment).
-
+approval*. Both of these will make testing easier (but, obviously, are not available in a production environment).  
 ![Reduced security](../assets/images/ethereum-stablecoin/reduced-security.png)
 
-You can use the auto-provisioned data or you can wipe them out and upload the test data file accompanying this article (LINK NEEDED). 
-The test data file contains only 2 users with accounts: *John Doe* (payer) and *Provable GBP Limited* (receiver)
+You can use the sandbox's auto-provisioned data, or you can wipe them out and upload the [test data file][40] 
+accompanying this article. The test data contains only 2 users with accounts: *John Doe* (payer) and *Provable GBP 
+Limited* (TPP receiver).
 
-At this point you can manually verify the end-to-end setup of the sandbox account or skip to the next section. 
-
-The following expanding box contains the cURL commands to test money movements.
+At this point you can manually verify the end-to-end setup of the sandbox account or skip to the next section.  
+The following expanding box contains the cURL commands to manually test the sandbox test application setup by 
+performing a payment.
 
 <details markdown="1">
   <summary>Click to expand!</summary>
 
-Replace `CLIENT_ID` & `CLIENT_SECRET` in the commands below from the newly created sandbox application.
+Replace `CLIENT_ID` & `CLIENT_SECRET` in the commands below from the newly created sandbox application.  
+If you have **not** used the test data of the blog post, you will also need to replace the account numbers and account 
+holder names.
 
 **Client access token**  
 ```bash
@@ -378,7 +397,7 @@ https://ob.sandbox.natwest.com/token \
 ```
 
 **Create a consent**  
-Replace the `CLIENT_ACCESS_TOKEN` below with the value.  
+Replace the `CLIENT_ACCESS_TOKEN` below with the value from above.  
 ```bash
 curl -k \
   -X POST \
@@ -515,7 +534,7 @@ curl -G -k \
 | jq '.Data.Status'
 ```
 
-You can also login to the sandbox E-Banking as "ProvableGBP Limited" (Bankline customer id `1234567890`) and verify that 
+You can also log in to the sandbox E-Banking as "ProvableGBP Limited" (Bankline customer id `1234567890`) and verify that 
 the transaction took place and the business account balance has increased (i.e. we can mint new tokens).
 
 ![Access e-banking](../assets/images/ethereum-stablecoin/access-ebanking.png)
@@ -528,20 +547,26 @@ the transaction took place and the business account balance has increased (i.e. 
 
 ## v4 - TPP bank client
 
-Create a new folder to hold our Go code  
+With the smart contract fairly well covered, it is time to turn our attention to the TPP's automated process.  
+We will implement it in Go. Create a new sub-folder, next to `chain` to hold our Go code.  
 ```bash
 mkdir tpp-client && cd tpp-client
 go mod init github.com/sgerogia/hello-stablecoin/tpp-client
 ```
 
-We will use the go-resty library 
-`go get github.com/go-resty/resty/v2`
+For the interactions with the bank's OpenBanking APIs, we will use the [go-resty] (LINK needed) library.   
+`go get github.com/go-resty/resty/v2`  
 
-and create an abstract TPP client interface and a concrete Natwest client implementation.
+and create an abstract [TPP client interface] (LINK to class) and a concrete [Natwest sandbox] (LINK to code) implementation.
 
-End-to-end integration test verifies correct functionality of the client
-The integration test has hard-coded account numbers from our test data set
-Here we take advantage of the programmatic approval consent offered by the Natwest sandbox
+The end-to-end [integration test] (LINK to code) verifies the correct functionality of the banking client, for the 
+entire lifecycle.  
+Note that this version of the test has hard-coded account numbers from our test data set. A better implementation would 
+be using an external data file.  
+Also note that we are taking advantage of the [programmatic consent approval] (deep LINK to code) offered by the 
+Natwest sandbox to progress the test.
+
+With the banking interaction done, it is time to move on to...
 
 ## v5 - Server-side cryptography
 
@@ -754,10 +779,16 @@ Let's start by installing the Metamask browser extension from the [official webs
    [25]: https://github.com/sgerogia/hello-chainlink/blob/main/hardhat.config.js
    [26]: https://docs.openzeppelin.com/contracts/4.x/wizard
    [27]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L77
-   [28]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L25
-   [29]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L35
-   [30]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L42-L60
-   [31]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L95
-   [32]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L113
-   [33]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L132
-   [34]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/contracts/ProvableGBP.sol#L147
+   [28]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L25
+   [29]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L35
+   [30]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L42-L60
+   [31]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L95
+   [32]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L113
+   [33]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L132
+   [34]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L147
+   [35]: https://github.com/sgerogia/hello-stablecoin/blob/v2/chain/test/ProvableGBP_base_test.ts
+   [36]: https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_e2e_flow_test.ts
+   [37]: https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_mintRequest_test.ts
+   [38]: https://hardhat.org/hardhat-runner/docs/advanced/create-task
+   [39]: https://www.bankofapis.com/products
+   [40]: ../assets/resources/openbanking-stablecoin/sandbox_data.yaml
