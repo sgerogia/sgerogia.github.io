@@ -146,13 +146,14 @@ encryption key in the contract. See a detailed encryption discussion in the next
 10. Uses it to contact the bank and execute the payment. Once the payment is confirmed settled (polling or callback), then...
 11. Call the smart contract's `mint` method, crediting the Payer's address with the right amount of new tokens (minus fees).
 
-### Encryption discussion
+### <a name="encr_discussion"></a>Encryption discussion
 
 Client-side wallets are all about isolating and protecting user private keys. The Metamask wallet supports [asymmetric 
 encryption/decryption][14], by exposing [`eth_decrypt`][15] and [`eth_getEncryptionPublicKey`][16]<sup>[3](#footnote_3)</sup>.  
 Digging a bit deeper, we see that Metamask is using the [eth-sig-util library][17] for all its cryptographic actions. 
-We can also see that the Metamask team has not re-invented the wheel, but rather chose to [implement][18] the [NaCl secret key][19].  
-That is great, as we can find good, compatible NaCl implementations in all the major languages. 
+We can also see that the Metamask team has not re-invented the wheel, but rather chose to [implement][18] the [NaCl secret 
+key][19] algorithm.  
+That is great, as we can find good, compatible NaCl implementations in all the major languages. More on this below. 
 
 The last thing to consider are the details of the interaction.  
 The Payer has no way of knowing the TPP's public encryption key upfront<sup>[4](#footnote_4)</sup>, so the TPP needs to 
@@ -548,72 +549,103 @@ the transaction took place and the business account balance has increased (i.e. 
 ## v4 - TPP bank client
 
 With the smart contract fairly well covered, it is time to turn our attention to the TPP's automated process.  
-We will implement it in Go. Create a new sub-folder, next to `chain` to hold our Go code.  
+We will implement it in Go.  
+Create a new sub-folder `tpp-client`, next to `chain` to hold our Go code.  
 ```bash
 mkdir tpp-client && cd tpp-client
 go mod init github.com/sgerogia/hello-stablecoin/tpp-client
 ```
 
-For the interactions with the bank's OpenBanking APIs, we will use the [go-resty] (LINK needed) library.   
+For the interactions with the bank's OpenBanking APIs, we will use the [go-resty][41] library.   
 `go get github.com/go-resty/resty/v2`  
 
-and create an abstract [TPP client interface] (LINK to class) and a concrete [Natwest sandbox] (LINK to code) implementation.
+Based on that we create an abstract [TPP client interface][42] and a concrete [Natwest sandbox][43] implementation.
 
-The end-to-end [integration test] (LINK to code) verifies the correct functionality of the banking client, for the 
+The end-to-end [integration test][44] verifies the correct functionality of the banking client, for the 
 entire lifecycle.  
-Note that this version of the test has hard-coded account numbers from our test data set. A better implementation would 
+Note that this version of the test has hard-coded account numbers from our [test data set][40]. A better implementation would 
 be using an external data file.  
-Also note that we are taking advantage of the [programmatic consent approval] (deep LINK to code) offered by the 
-Natwest sandbox to progress the test.
+Also note that we are taking advantage of the [programmatic consent approval][45] offered by the Natwest sandbox in lieu 
+of a real customer approval.
+
+We can run the tests with `make test-client`.
 
 With the banking interaction done, it is time to move on to...
 
 ## v5 - Server-side cryptography
 
-<Explain NaCl and how it ties up with private keys>
-<Different elliptic curves>
+What we want to achieve here is identical encryption/decryption behaviour as what the Metamask wallet does internally. 
+See section [*Encryption discussion*](#encr_discussion) further up.
 
-## v6 - ETH client 
+At the core of our code is the [Go implementation][46] of the NaCl library. `go get golang.org/x/crypto/nacl/box`  
+The internals of it are standard across all language implementations and follow the [original research][47]. 
 
-`go get github.com/ethereum/go-ethereum`
+We will just highlight 2 aspects of our code:  
+1. The [`KeyPair`][48] abstraction  
+NaCl is using elliptic curve asymmetric encryption. Ethereum (and most/all chains for that matter) use elliptic curve 
+asymmetric signatures. Ethereum and Nacl utilise *different [elliptic curves][48]*.  
+So we need to build a mechanism where we can generate 2 public keys from the same private, one for each curve. 
 
-Then generate our Go code bindings from the compiled contract's ABI.
-```bash
-cat ../chain/artifacts/contracts/ProvableGBP.sol/ProvableGBP.json \
-   | jq '.abi' \
-   | abigen --abi - \
-      --type ProvableGBP \
-      --pkg contract \
-      --out contract/provable_gbp.go \
-      --bin ../chain/artifacts/contracts/ProvableGBP.bin
-```
+2. The encrypted message's [(un)marshalling][49]  
+The encrypted message is a JSON, with base64 encoded fields and known binary lengths. We tap into Go's [JSON mashalling][50]
+support to encapsulate this.
 
-TODO 
-Explain code construct
+The unit tests (`make test-client`) verify the correctness of our encryption, as well as compatibility with an encrypted message manually 
+generated using Metamask's implementation.
 
-Execute integration test
+It is time to move to the "meaty" part of our Go coding.
 
+## v6 - Ethereum smart contract client 
+
+We are making heavy use of the [Ethereum Go][51] implementation. `go get github.com/ethereum/go-ethereum`  
+
+In order to implement the TPP logic we outlined above, we split the code in 4 packages.
+
+* Contract and wrapper ([`contract`][52])  
+The file [`provable_gbp`][56] is an auto-generated binding from the contract's [ABI][57]. It contains all the available
+contract methods and corresponding Go data structures.  
+We created a wrapper around this binding ([`contract_client`][58]), which allows us to interact with the contract on our 
+own terms. The key thing to note here is the [`GetSingleUseSession`][59] method. This makes sure that each contract call
+uses the next [nonce][60] and the correct gas price.  
+More on this in the [Discussion](#discussion) section below.
+
+* Ethereum event handling ([`event`][53])  
+The contract [event handler][62] and [subscriber][61] are naive implementations of the logic.  
+The subscriber connects to an event stream from the contract (i.e. requiring a websocket), but has very little in terms 
+of error recovery (e.g. in case of network errors). The handler is more straight-forward in its logic, processing events
+as the come in. It makes no effort to determine duplicate/repeated events.
+
+* Payment settlement check ([`schedule`][54])  
+The scheduler and its associated task is another simple in-memory component. It is intended to be triggered by an external 
+periodic job and check submitted payments until they are settled (i.e. money transferred).   
+
+* Binary launch and config ([`cmd`][55])  
+Finally this package provides the [`main`][63] method which brings our system together and launches the binary process. 
+It is configured by an external TOML file.
+
+After updating the Makefile [env. variables][64], we can execute all our tests (`make test-client`), including the 
+complete end-to-end [integration test][65].
 
 We are finally ready for an...
 
 ## End-to-end test
 
+(IMAGE FOR TESTING)
+
 For this we will be using a different pair of keys as payer and TPP.  
 
-Follow the instructions in Annex 1 to setup an Infura account and a correctly set up Metamask, pointing to the Goerli testnet.
+Follow the instructions in Annex 1 to setup an Infura account and a correctly set up Metamask, pointing to the Sepolia testnet.
 
-Follow the instructions (Infura & Metamask) in the Chainlink blog post (https://sgerogia.github.io/Chainlink-Oracle/#annex1) to set yourself up. 
-
-We will deploy our contract to the Goerli testnet.       
+We will first deploy our contract to the Sepolia testnet.       
 ```bash
 PRIVATE_KEY=0x<TPP_PRIVATE_KEY> \
 INFURA_TOKEN=<INFURA_TOKEN> \
-npx hardhat deploy --network goerli --tags gbp
+npx hardhat deploy --network sepolia --tags gbp
 ```
 Note down the new contract address; we will need it soon!
 
-Make sure you point your Metamask to the Goerli network  
-![Change to Goerli network](../assets/images/ethereum-stablecoin/change-network.png)
+Make sure you point your Metamask to the Sepolia network  
+![Change to Sepolia network](../assets/images/ethereum-stablecoin/change-network.png)
 
 ...and make Metamask "aware" of our token (link `Import tokens`)    
 ![Import PGBP token](../assets/images/ethereum-stablecoin/import-token.png)
@@ -624,9 +656,9 @@ make build-client
 ```
 
 Edit the correct values in `tpp-client.toml`, like `ContractAddress`, `ProviderUrl`,... Pay attention that we will 
-be using the websocket API, as we need event notifications.
+be using Infura's websocket API, as we need event notifications.
 
-...and run the local server using the private key . Note how we omit the `0x` key prefix here.  
+Run the local server using the private key. Note how we omit the `0x` key prefix here.  
 ```bash
 PRIVATE_KEY=<TPP_PRIVATE_KEY> \
   ./tpp --config ./tpp-client.toml 
@@ -650,16 +682,16 @@ npx hardhat 1-mint-request \
 Initiating mintRequest for 123 PGBP ...
 ```
 
-After a couple of seconds, we can see the TPP process coming to life, after receiving the event.  
+After a few seconds, we can see the TPP process coming to life, after receiving the event.  
 ![MintRequest event](../assets/images/ethereum-stablecoin/mint-request-event.png)
 
-We can also track the contract interactions on Goerli Etherscan; transactions, events and event fields.  
+We can also track the contract interactions on Sepolia Etherscan; transactions, events and event fields.  
 ![Etherscan contract](../assets/images/ethereum-stablecoin/etherscan-contract.png)
 
 
 
 
-## Next steps
+## <a name="discussion"></a>Discussion & Next steps
 
 Not the optimal way by any stretch of the imagination 
 Could have shorten the interaction by 1 round-trip
@@ -792,3 +824,30 @@ Let's start by installing the Metamask browser extension from the [official webs
    [38]: https://hardhat.org/hardhat-runner/docs/advanced/create-task
    [39]: https://www.bankofapis.com/products
    [40]: ../assets/resources/openbanking-stablecoin/sandbox_data.yaml
+   [41]: https://github.com/go-resty/resty
+   [42]: https://github.com/sgerogia/hello-stablecoin/blob/v4/tpp-client/bank/client.go
+   [43]: https://github.com/sgerogia/hello-stablecoin/blob/v4/tpp-client/bank/impl/natwest_client.go
+   [44]: https://github.com/sgerogia/hello-stablecoin/blob/v4/tpp-client/bank/impl/natwest_client_e2e_test.go
+   [45]: https://github.com/sgerogia/hello-stablecoin/blob/v4/tpp-client/bank/impl/natwest_client_e2e_test.go#L63
+   [46]: https://pkg.go.dev/golang.org/x/crypto/nacl/box
+   [47]: https://nacl.cr.yp.to/
+   [48]: https://en.wikipedia.org/wiki/Elliptic_curve
+   [49]: https://github.com/sgerogia/hello-stablecoin/blob/v5/tpp-client/encrypt/crypto.go#L145-L189
+   [50]: https://pkg.go.dev/encoding/json
+   [51]: https://github.com/ethereum/go-ethereum
+   [52]: https://github.com/sgerogia/hello-stablecoin/tree/v6/tpp-client/contract
+   [53]: https://github.com/sgerogia/hello-stablecoin/tree/v6/tpp-client/event
+   [54]: https://github.com/sgerogia/hello-stablecoin/tree/v6/tpp-client/schedule
+   [55]: https://github.com/sgerogia/hello-stablecoin/tree/v6/tpp-client/cmd
+   [56]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/contract/provable_gbp.go
+   [57]: https://www.mycryptopedia.com/ethereum-abi-explained/
+   [58]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/contract/contract_client.go
+   [59]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/contract/contract_client.go#L93
+   [60]: https://medium.com/swlh/ethereum-series-understanding-nonce-3858194b39bf
+   [61]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/event/impl/event_subscriber_impl.go
+   [62]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/event/impl/event_handler_impl.go
+   [63]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/cmd/main.go#L24
+   [64]: https://github.com/sgerogia/hello-stablecoin/blob/v6/Makefile#L4
+   [65]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/event/impl/event_e2e_test.go
+
+   
