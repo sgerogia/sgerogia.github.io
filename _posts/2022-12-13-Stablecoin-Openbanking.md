@@ -5,7 +5,7 @@ author: stelios
 tags: [payments, openbanking, pisp, blockchain, hands-on]
 categories: [Blockchain, Ethereum, Payments]
 featured: true
-description: "."
+description: "Ensuring that crypto stablecoins are fully backed in a transparent way is crucial for trust and for the development of web3. This article presents an automated stablecoin minting mechanism for EVM-compatible chains based on OpenBanking."
 image: assets/images/ethereum-stablecoin/coinwire-japan-iNOavZh6dQ8-unsplash.jpg
 ---
 
