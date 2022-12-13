@@ -21,12 +21,12 @@ Let's take a deep dive on **What** stablecoins are and then examine **Why** we n
 ## Types of stablecoins - The What
 
 As their name suggests, stablecoins offer *stability* of exchange value against another asset or currency. E.g. 1 
-stablecoin X = 1 USD.  
+coin X = 1 USD.  
 This stability can be achieved in a number of ways, which give us 4 different categories (original analysis 
 can be found [here][1]).
 
 * **"True" Stablecoins**    
-These are non-interest bearing coins. Stability is achieved by the issuer through 2 "pillars". Namely the issuer...   
+These are non-interest bearing coins. Stability is achieved by the issuer through 2 pillars. Namely, the issuer   
   * Mints and buys back coins at par, and 
   * Holds assets to back their redeem obligation. To avoid currency risk, the assets need to be denominated in the 
     reference currency, be highly liquid, and considered "safe". A classic example is government bonds, like US Treasuries.  
@@ -61,12 +61,12 @@ money to match the velocity of other blockchain digital assets.
 
 Put in very simple terms, OpenBanking is a financial and technical standard.   
 It allows a bank customer to  
-* securely authorise third parties, 
-* through an API 
-* to perform all activities said customer would have to logon to the bank's portal to perform.
+1. securely authorise third parties, 
+2. through an API 
+3. to perform all activities said customer would have to logon to the bank's portal to perform.
 
 I have covered the internals of OpenBanking in great detail in my 2-part series ([part 1][7], [part 2][8]).  
-Take some time to go through them, as we will be using some key concepts in our approach.
+Take some time to go through them, as we will be using some key concepts in our solution.
 
 # Marrying OpenBanking & web3
 
@@ -79,7 +79,7 @@ Like any system and product, we need to start with a...
 
 The current stablecoin market is dominated by a few big players, namely USDT, USDC and BUSD. 
 All three of them belong to the true stablecoin category above<sup>[1](#footnote_1)</sup>. Namely    
-* On-ramp only for large investors (E.g. $100k deposit minimum for USDT)
+* On-ramp only for large investors (e.g. $100k deposit minimum for USDT)
 * Off-ramp for accredited people (sometimes [discretionary][9]) 
 
 Most importantly and to this day, the lack of transparency in the whole minting and redemption process is a constant 
@@ -87,29 +87,28 @@ Most importantly and to this day, the lack of transparency in the whole minting 
 
 An ideal solution would  
 * automate away the need for manual processing of fiat payments, minting and redemption of tokens, and 
-* be making all interactions visible / provable on-chain.
-
-Keeping things on-chain, would make the process of externally validating the protocol's volumes trivial.
+* be making all interactions visible and provable on-chain. This would make the process of externally validating the 
+  protocol's volumes trivial.
 
 ## Challenges
 
 OpenBanking is built on top of [OAuth2][11], inheriting a fundamental assumption: an end-to-end secure channel, namely HTTPS.  
 This is crucial as the OpenBanking messages carry sensitive information<sup>[2](#footnote_2)</sup>.
 
-This comes at a stark contrast with blockchains, where transparency of information underpins trust. 
+This comes at a stark contrast with blockchains, where transparency of information underpins trust.  
 We will need to consider how to use available cryptographic primitives to address this challenge.
 
-## Solution 
+## <a name="solution"></a>Solution 
 
 The following diagram gives an overview of our protocol's functionality.
 
 ![OpenBanking Stablecoin](../assets/images/ethereum-stablecoin/ob-stablecoin.png)
 > The minting flow of our OpenBanking dApp
 
-The smart contract has one or more "owners", which are OpenBanking regulated [TPPs][13]. The TPPs publish their 
-encryption key in the contract. See a detailed encryption discussion in the next section.
+The smart contract has one or more "owners", which are OpenBanking regulated [TPPs][13]. The TPP(s) publish their 
+encryption key in the contract. See a detailed [encryption discussion](#encr_discussion) in the next section.
 
-1. The Payer launches the dApp and initiates a `mintRequest` method call.  
+1. The Payer launches the minting dApp and makes a `mintRequest` method call to the smart contact.  
   The requested fiat `amount` is visible on-chain, while the following payload is encrypted with the TPP's public key.   
 ```json
 {
@@ -121,10 +120,10 @@ encryption key in the contract. See a detailed encryption discussion in the next
 }
 ```
 2. The contract emits a `MintRequest` event.   
-  The TPP uses their private key to decrypt the payload, and...
-3. Creates an initial payment consent with the payer's bank.  
+  The TPP use their private key to decrypt the payload, and...
+3. Create an initial payment consent calling the payer's bank OpenBanking API.  
   The bank responds with an authorisation URL, for the Payer to approve.
-4. The TPP makes an `authRequest` method call.  
+4. The TPP makes an `authRequest` method call to the contract.  
   The payload is encrypted with the Payer's public key (from the previous message) and looks like this  
 ```json
 {
@@ -139,18 +138,22 @@ encryption key in the contract. See a detailed encryption discussion in the next
 ```json
 {
   "consentCode": "Authorisation code",
-  "publicKey": "Payer's public encryption key"
+  "requestId": "Original mint request id, to associate this call"
 }
 ```
 9. The TPP receives the `AuthGranted` event, decrypts the payload and...
-10. Uses it to contact the bank and execute the payment. Once the payment is confirmed settled (polling or callback), then...
-11. Call the smart contract's `mint` method, crediting the Payer's address with the right amount of new tokens (minus fees).
+10. Uses it to contact the bank and execute the payment. Once the payment is confirmed settled by the bank (by polling 
+   or callback), then...
+11. Call the smart contract's `paymentComplete` method, doing the token mint and crediting the Payer's address with the 
+   right amount of new tokens (minus fees).
 
 ### <a name="encr_discussion"></a>Encryption discussion
 
-Client-side wallets are all about isolating and protecting user private keys. The Metamask wallet supports [asymmetric 
-encryption/decryption][14], by exposing [`eth_decrypt`][15] and [`eth_getEncryptionPublicKey`][16]<sup>[3](#footnote_3)</sup>.  
-Digging a bit deeper, we see that Metamask is using the [eth-sig-util library][17] for all its cryptographic actions. 
+Client-side wallets are all about isolating and protecting user private keys. These are not exposed in any way but rather 
+hidden behind abstraction methods.  
+The Metamask wallet supports [asymmetric encryption/decryption][14], by exposing [`eth_decrypt`][15] and 
+[`eth_getEncryptionPublicKey`][16]<sup>[3](#footnote_3)</sup>.  
+Digging a bit deeper in [the code][73], we see that Metamask is using the [eth-sig-util library][17] for all its cryptographic actions. 
 We can also see that the Metamask team has not re-invented the wheel, but rather chose to [implement][18] the [NaCl secret 
 key][19] algorithm.  
 That is great, as we can find good, compatible NaCl implementations in all the major languages. More on this below. 
@@ -158,11 +161,11 @@ That is great, as we can find good, compatible NaCl implementations in all the m
 The last thing to consider are the details of the interaction.  
 The Payer has no way of knowing the TPP's public encryption key upfront<sup>[4](#footnote_4)</sup>, so the TPP needs to 
 publish it somewhere. In this instance, we will choose a read-only field of the smart contract.  
-In an industry-grade setup, the TPP would regularly rotate their encryption key and keep it in an [HSM][22].
+In an industry-grade setup, the TPP would regularly rotate their encryption key and keep the private part in an [HSM][22].
 
 We also need a way to inform the TPP of the Payer's encryption key.  
-To avoid leaking information, we choose to encrypt it as part of the payload. In a more robust setup, the Payer's dApp
-could choose to generate session private/public encryption, with the downside that old TPP messages cannot be retroactively 
+To avoid leaking information on-chain, we choose to encrypt it as part of the payload. In a more robust setup, the Payer's dApp
+could choose to generate session-level encryption keypairs. The downside would be that old TPP messages cannot be retroactively 
 decrypted once the session key is discarded.
 
 # Let's get coding
@@ -171,8 +174,8 @@ decrypted once the session key is discarded.
 > Photo by James Harrison on Unsplash
 
 > The code for this blog post is in repository [hello-stablecoin][23].  
-> Each section below has a corresponding code branch (`v1`, `v2` etc) with the progress of the project until that point. 
-> You can switch to that branch and follow along at your pace.
+> Each section below has a corresponding code branch ([`v1`][74], [`v2`][75] etc) containing the progress of the project 
+> until that point. You can switch to that branch and follow along at your pace.
 
 ## v1 - Setup and smart contract minting
 
@@ -180,7 +183,7 @@ We are going to have all our code in a single repo.
 Everything related to the smart contract will be in sub-folder `/chain`.  
 
 We start by installing the correct Node version and an initial Typescript [Hardhat project skeleton][24] by scavenging 
-from our [previous project][25].  
+from our [previous Hardhat project][25].  
 You can install all dependencies by running  
 ```
 cd chain
@@ -199,7 +202,7 @@ Namely, our contract is
 Our additions to the contract are  
 * Disable the public [`mint` method][27]; we want this to happen via the lifecycle, not explicitly.
 * Expose the TPP's [public key][28] for clients to use for encryption. 
-* Create a [map of mint commitments][29], to keep track and reduce spam.
+* Create a [map of mint commitments][29]. This will help the contract keep track and reduce spam as much as possible.
 * Define the payload of the different [events][30] that the contract will emit. Notice that we have made some fields 
   `indexed` to aid with event retrieval on the client side.
 * Define the logic and controls of the 4 smart contract methods: [`mintRequest`][31], [`authRequest`][32],
@@ -218,23 +221,24 @@ Our tests at this stage provide some basic coverage and are split in 3 groups
 We can run the test suite with `make test-contract`.
 
 These unit tests serve as an initial example of using ether.js and Hardhat's embedded chain runner to test smart contracts.  
-However they are far from providing a complete coverage of functionality. The reader can easily extend them as an 
-exercise to cover additional use cases and edge cases. 
+However they are far from providing a complete coverage of functionality.  
+The reader can easily extend them as an exercise to cover additional use cases and edge cases. 
 
 ## v3 - Manual testing 
 
-(IMAGE FOR TESTING)
+![Manual testing](../assets/images/ethereum-stablecoin/stijn-swinnen-Q8FHN3qSq2w-unsplash.jpg)
+> Photo by Stijn Swinnen on Unsplash
 
 Now that we have tested the smart contract with unit tests in embedded mode, the next step is to test against a separate
-chain. For this we will use Ganache, running a single-node chain locally.
+chain. For this we will use [Ganache][68], running a single-node chain locally.
 
 ### Hardhat tasks 
 
-To facilitate our smoke testing, we will utilize Hardhat's [task plugin][38] mechanism.c
+To facilitate our smoke testing, we will utilize Hardhat's [task plugin][38] mechanism.
 
-In the `v3` branch, under folder `tasks`, we have created a number of tasks to allow us to emulate the different steps 
+In the [`v3`][76] branch, under folder `tasks`, we have created a number of tasks to allow us to emulate the different steps 
 of the interactions (plus a few more generic ones). For convenience, the mint-related tasks have a numeric prefix to 
-their name. This way they will appear first in the Hardhat list as well as indicate the correct order of invocation.  
+their name. This way they will appear first in the Hardhat tool list as well as indicate the correct order of invocation.  
 ```bash
 $ npx hardhat
 Hardhat version 2.12.2
@@ -280,7 +284,7 @@ We can verify the contract deployment in Ganache.
 
 Take note of the contract address, as we will need it for our...
 
-### End-to-end testing
+### Local testing
 
 We can now use the tasks we have created to emulate the flow between the 2 accounts: Payer and TPP. We do not have to 
 use any real values at this point, it is all about testing the flow of the deployed contract.
@@ -329,7 +333,7 @@ npx hardhat 3-auth-request \
     --contract <CONTRACT_ADDRESS> \
     --network ganache \
     --request-id <ORIGINAL_REQUEST_ID> \
-    --public-key <PUBLIC_KEY_FROM_MINT_REQUEST> \
+    --public-key <PAYER_PUBLIC_KEY_FROM_MINT_REQUEST> \
     --consent-id <SOME_CONSENT_ID> \
     --url "https://bank.com/some-url/to/authorise/consent/"
 ```
@@ -353,26 +357,27 @@ npx hardhat 5-auth-granted \
 ```
 
 It will be an excellent exercise for the reader to continue implementing the remaining missing tasks: `6-get-auth-granted`,
-`7-payment-complete`. Then verify the increase in total supply (i.e. tokens being minted) with `npx hardhat total-supply`
+`7-payment-complete`. Upon succesfully completing a mint request cycle, the total supply will increase (i.e. tokens being 
+minted). This will be verified with `npx hardhat total-supply`.
 
 ## Brief pause - Sandbox bank accounts
 
 ![Brief pause](../assets/images/ethereum-stablecoin/claudio-schwarz-YxywelymVuE-unsplash.jpg)
 > Photo by Claudio Schwarz on Unsplash
 
-Since our solution is based on OpenBanking, we need to use a testing platform. We will go for the [Natwest sandbox][39].  
+Since our solution is based on OpenBanking, we need to use a test banking platform. We will go for the [Natwest sandbox][39].  
 It gives us a realistic client e-banking view, to better visualise the money flows.   
 > A detailed overview of the sandbox and its basic concepts can be found in my [hands-on OpenBanking blog post][8]. If you 
 > are not familiar, it would be very helpful to take some time to read the basic concepts.
 
-To keep things simple, we will use basic security (username & password) in our application.   
+To keep things simple, we will use basic security (username & password) in our configured sandbox application.   
 ![Create sandbox app](../assets/images/ethereum-stablecoin/create-sandbox-app.png)
 
-Scroll down to find the `Payment Initiation 3.1.7` API and configure it to have *<reduced> security* and *programmatic 
+Scroll down to find the `Payment Initiation 3.1.7` API and configure it to have *reduced security* and *programmatic 
 approval*. Both of these will make testing easier (but, obviously, are not available in a production environment).  
 ![Reduced security](../assets/images/ethereum-stablecoin/reduced-security.png)
 
-You can use the sandbox's auto-provisioned data, or you can wipe them out and upload the [test data file][40] 
+You can use the sandbox's auto-provisioned data, or you can wipe it out and upload the [test data file][40] 
 accompanying this article. The test data contains only 2 users with accounts: *John Doe* (payer) and *Provable GBP 
 Limited* (TPP receiver).
 
@@ -381,7 +386,7 @@ The following expanding box contains the cURL commands to manually test the sand
 performing a payment.
 
 <details markdown="1">
-  <summary>Click to expand!</summary>
+  <summary><b>Click to expand!</b></summary>
 
 Replace `CLIENT_ID` & `CLIENT_SECRET` in the commands below from the newly created sandbox application.  
 If you have **not** used the test data of the blog post, you will also need to replace the account numbers and account 
@@ -398,7 +403,7 @@ https://ob.sandbox.natwest.com/token \
 ```
 
 **Create a consent**  
-Replace the `CLIENT_ACCESS_TOKEN` below with the value from above.  
+Replace the `CLIENT_ACCESS_TOKEN` below with the value you just got.  
 ```bash
 curl -k \
   -X POST \
@@ -456,7 +461,7 @@ curl -v -G -k \
 ```
 
 **Complete authorisation**  
-Copy the `location` and paste in a browser.  
+Copy the `location` from the response and paste it in a browser.  
 Complete the consent authorisation, using the login information of *John Doe* (`customerNumber` etc)
 
 ![Ebanking login](../assets/images/ethereum-stablecoin/ebanking-login.png)
@@ -545,7 +550,7 @@ the transaction took place and the business account balance has increased (i.e. 
 ![Bankline transactions](../assets/images/ethereum-stablecoin/bankline-trx.png)
 
 </details>
-
+<br/>
 ## v4 - TPP bank client
 
 With the smart contract fairly well covered, it is time to turn our attention to the TPP's automated process.  
@@ -564,7 +569,7 @@ Based on that we create an abstract [TPP client interface][42] and a concrete [N
 The end-to-end [integration test][44] verifies the correct functionality of the banking client, for the 
 entire lifecycle.  
 Note that this version of the test has hard-coded account numbers from our [test data set][40]. A better implementation would 
-be using an external data file.  
+be using a test data file.  
 Also note that we are taking advantage of the [programmatic consent approval][45] offered by the Natwest sandbox in lieu 
 of a real customer approval.
 
@@ -578,9 +583,9 @@ What we want to achieve here is identical encryption/decryption behaviour as wha
 See section [*Encryption discussion*](#encr_discussion) further up.
 
 At the core of our code is the [Go implementation][46] of the NaCl library. `go get golang.org/x/crypto/nacl/box`  
-The internals of it are standard across all language implementations and follow the [original research][47]. 
+The internals of it follow the [original research][47]. 
 
-We will just highlight 2 aspects of our code:  
+We will highlight 2 aspects of our code:  
 1. The [`KeyPair`][48] abstraction  
 NaCl is using elliptic curve asymmetric encryption. Ethereum (and most/all chains for that matter) use elliptic curve 
 asymmetric signatures. Ethereum and Nacl utilise *different [elliptic curves][48]*.  
@@ -590,8 +595,8 @@ So we need to build a mechanism where we can generate 2 public keys from the sam
 The encrypted message is a JSON, with base64 encoded fields and known binary lengths. We tap into Go's [JSON mashalling][50]
 support to encapsulate this.
 
-The unit tests (`make test-client`) verify the correctness of our encryption, as well as compatibility with an encrypted message manually 
-generated using Metamask's implementation.
+The unit tests (`make test-client`) verify the correctness of our encryption, as well as compatibility with an encrypted 
+message generated manually using Metamask's implementation.
 
 It is time to move to the "meaty" part of our Go coding.
 
@@ -599,11 +604,11 @@ It is time to move to the "meaty" part of our Go coding.
 
 We are making heavy use of the [Ethereum Go][51] implementation. `go get github.com/ethereum/go-ethereum`  
 
-In order to implement the TPP logic we outlined above, we split the code in 4 packages.
+In order to implement the TPP logic we outlined in section [Solution](#solution), we split the code in 4 packages.
 
 * Contract and wrapper ([`contract`][52])  
 The file [`provable_gbp`][56] is an auto-generated binding from the contract's [ABI][57]. It contains all the available
-contract methods and corresponding Go data structures.  
+contract methods and corresponding Go data structures. See Makefile [`generate-abi`][77] target.  
 We created a wrapper around this binding ([`contract_client`][58]), which allows us to interact with the contract on our 
 own terms. The key thing to note here is the [`GetSingleUseSession`][59] method. This makes sure that each contract call
 uses the next [nonce][60] and the correct gas price.  
@@ -617,11 +622,12 @@ as the come in. It makes no effort to determine duplicate/repeated events.
 
 * Payment settlement check ([`schedule`][54])  
 The scheduler and its associated task is another simple in-memory component. It is intended to be triggered by an external 
-periodic job and check submitted payments until they are settled (i.e. money transferred).   
+periodic job and check submitted payments until they are confirmed (i.e. irrevocably executed and not stopped by, e.g. 
+internal fraud checks).   
 
 * Binary launch and config ([`cmd`][55])  
 Finally this package provides the [`main`][63] method which brings our system together and launches the binary process. 
-It is configured by an external TOML file.
+It is configured by an external [TOML file][78].
 
 After updating the Makefile [env. variables][64], we can execute all our tests (`make test-client`), including the 
 complete end-to-end [integration test][65].
@@ -630,25 +636,21 @@ We are finally ready for an...
 
 ## End-to-end test
 
-(IMAGE FOR TESTING)
+![Testing](../assets/images/ethereum-stablecoin/jeswin-thomas-dfRrpfYD8Iw-unsplash.jpg)
+> Photo by Jeswin Thomas on Unsplash
 
-For this we will be using a different pair of keys as payer and TPP.  
+As before, for our end-to-end test we will be using a different pair of keys: one for the Payer and one for the TPP.  
 
-Follow the instructions in Annex 1 to setup an Infura account and a correctly set up Metamask, pointing to the Sepolia testnet.
+Get an [Infura account key][67] and follow the [instructions in Annex 1](#annex1) to have a correctly set up Metamask wallet, 
+pointing to the Sepolia testnet.
 
-We will first deploy our contract to the Sepolia testnet.       
+We will first deploy our contract.       
 ```bash
 PRIVATE_KEY=0x<TPP_PRIVATE_KEY> \
 INFURA_TOKEN=<INFURA_TOKEN> \
 npx hardhat deploy --network sepolia --tags gbp
 ```
-Note down the new contract address; we will need it soon!
-
-Make sure you point your Metamask to the Sepolia network  
-![Change to Sepolia network](../assets/images/ethereum-stablecoin/change-network.png)
-
-...and make Metamask "aware" of our token (link `Import tokens`)    
-![Import PGBP token](../assets/images/ethereum-stablecoin/import-token.png)
+Note down the new contract address you will see printed; we will need it soon!
 
 Let's build the Go binary.   
 ```bash
@@ -656,9 +658,9 @@ make build-client
 ```
 
 Edit the correct values in `tpp-client.toml`, like `ContractAddress`, `ProviderUrl`,... Pay attention that we will 
-be using Infura's websocket API, as we need event notifications.
+be using Infura's websocket API (not HTTP), as we need streaming event notifications.
 
-Run the local server using the private key. Note how we omit the `0x` key prefix here.  
+Run the local server using the private key. Note how we omit the `0x` key prefix here.
 ```bash
 PRIVATE_KEY=<TPP_PRIVATE_KEY> \
   ./tpp --config ./tpp-client.toml 
@@ -666,7 +668,25 @@ PRIVATE_KEY=<TPP_PRIVATE_KEY> \
 {"level":"info","ts":1668771551.527633,"caller":"cmd/main.go:53","msg":"Listening for on-chain events..."}  
 ```
 
-Let's make a mint request as a payer. You may need to change the account details for your Natwest sandbox dataset.   
+You can view the entire mint interaction between Payer and TPP in the captioned video below (video has no sound).
+
+<iframe 
+    width="560" height="315" 
+    src="https://www.youtube.com/embed/zk_08b8WnnU" 
+    title="OpenBanking + ERC-20" 
+    frameborder="0" 
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+The commands issued in the interaction are in the expanding section below, if you are interested. 
+
+<details markdown="1">
+  <summary><b>Click to expand!</b></summary>
+
+Throughout the following, we can track the contract interactions on Sepolia Etherscan; transactions, events and event fields.  
+![Etherscan contract](../assets/images/ethereum-stablecoin/etherscan-contract.png)
+
+Let's make a mint request as a payer from the command line. You may need to change the bank account details if you are 
+using a different Natwest sandbox dataset.   
 ```bash
 INFURA_TOKEN=<INFURA_TOKEN> \
 PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
@@ -683,48 +703,115 @@ Initiating mintRequest for 123 PGBP ...
 ```
 
 After a few seconds, we can see the TPP process coming to life, after receiving the event.  
-![MintRequest event](../assets/images/ethereum-stablecoin/mint-request-event.png)
+![MintRequest event](../assets/images/ethereum-stablecoin/mint-request-event.png)  
+The TPP process contacts the bank to create a draft consent and calls the `authRequest` method of the contract.
 
-We can also track the contract interactions on Sepolia Etherscan; transactions, events and event fields.  
-![Etherscan contract](../assets/images/ethereum-stablecoin/etherscan-contract.png)
+While this is happening, we need to have the client command line listening for the emitted `AuthRequest` event.  
+```bash
+INFURA_TOKEN=<INFURA_TOKEN> \
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
+npx hardhat 4-get-auth-request \
+--contract <CONTRACT_ADDRESS> \
+--network sepolia \
+--account <PAYERS_ACCOUNT_ON_SEPOLIA_USED_FOR_EVENT_FILTERING> \
+--poll true
+```  
+This command will start polling the contract for new `AuthRequest` events. Once a new one is detected, it will print 
+its details. 
 
+Note the `RequestId` and use the URL to open the bank's consent authorisation page.  
+![Approve consent](../assets/images/ethereum-stablecoin/approve-consent.png)
 
+On approval, we need the authorisation `code`. We put it in the payload of the `authGranted` call, along with the `RequestId`.  
+```bash
+INFURA_TOKEN=<INFURA_TOKEN> \
+PRIVATE_KEY=0x<PAYER_PRIVATE_KEY> \
+npx hardhat 5-auth-granted \
+--contract <CONTRACT_ADDRESS> \
+--network sepolia \
+--request-id <REQUEST_ID>
+--consent-code <CONSENT_AUTHORISATION_CODE>
+```
 
+The TPP process receives the `AuthGranted` event, executes the payment. Upon successful settlement of the fiat payment, 
+it calls the `paymentComplete` method to mint the tokens in the Payer's Ethereum account.
+
+</details>
+<br/>
+
+And that was it!  
+We just had an automated ERC-20 mint, in response to a transfer of fiat, all visible on-chain. 🎉🥳🍾
 
 ## <a name="discussion"></a>Discussion & Next steps
 
-Not the optimal way by any stretch of the imagination 
-Could have shorten the interaction by 1 round-trip
-Have the redirect to our server and pick up the consent authorisation code immediately 
+![Technical discussion](../assets/images/ethereum-stablecoin/charlesdeluvio-Lks7vei-eAg-unsplash.jpg)
+> Photo by charlesdeluvio on Unsplash
 
-<DIAGRAM HERE/>
+This implementation and approach is by no means perfect. It has a number of issues, which would need correction or 
+mitigation before considered anywhere near mature. Here is a non-exhaustive list. 
 
-The response from the bank gives us the original consent id which we can use as a correlation identifier
+**Product-related**
+* The Payer needs to have the native token (e.g. ETH) to interact with the contract.  
+  This could be a barrier-to-entry, especially if this was considered a mass-market [on-ramp][69]. A possible future 
+  solution could be a [gas relay][70], where some other party picks up the cost of the transaction.
+* Metamask will deprecate the [encryption methods][79]  
+  Removal of these methods without a direct replacement would make it close to impossible to implement our system over 
+  [EVM-compatible chains][80]. A derisking strategy could be to choose a privacy-first chain, like [Secret][81]. 
+* The contract is subject to spam.  
+  A bad actor could start spamming the contract with pointless `mintRequest` calls from burner addresses, especially if 
+  calls were "free" due to gas relay. A possible mitigation to that could be to require some additional verifiable form of identity in 
+  the payload (e.g. Google identity JWT) and move some filtering/decoding logic in the smart contract (increasing the 
+  gas cost). 
+* A malicious TPP could fake mint interactions.  
+  Either by faking the transactions or by using "money mule" bank accounts with recycled funds. This would be the harder 
+  one to crack, while maintaining a balance between transparency (of interactions) and privacy (of user details). Some 
+  avenues to explore would be 
+   * [TLS notarised][71] bank responses
+   * publishing automated [OpenBanking Balances][72] for TPP's account on-chain (e.g. via Oracles) and cross-referencing 
+     with completed mint transactions.
 
-A shorter interaction cycle Reduces attack & error surface area and inevitably leads to a better user experience 
+**Technical**   
+* The `authGranted` method is redundant.  
+  We could have reduced the number of interactions by redirecting from the bank back to the TPP process and picking up
+  the authorisation `code` from there. This would also reduce the surface are for network errors.
+* The current implementation has very little fault tolerance.  
+  Everything is kept in memory and error correction is an afterthought. As one would expect with a PoC.
+* The current implementation has very poor parallelization.  
+  Sending Ethereum tranactions is inherently sequential, due to the account's [nonce][60]. The current code to mitigate 
+  this ([`GetSingleUseSession`][59]) is not well thought-out. The parallelization problem would be best addressed with 
+  a combination of 
+  * a persistent message bus, deduplicating incoming messages on the TPP side, and 
+  * multiple outgoing TPP wallet addresses, akin to outboxes.
 
-A great exercise for the reader to take this system to v2 
+Last but not least, the curent PoC lacks a UI; a single-page application to integrate with Metasmask and provide a 
+semi-realistic user experience.  
 
+The motivated reader could take this PoC one step further by adding a web-based UI, using the existing Hardhat code as 
+an example. 
 
-# Discussion & Parting thought
+# Parting thought
 
-![Discussion](../assets/images/goa-service/kris-n9u9ZEoH2yM-unsplash.jpg)
-> Photo by kris on Unsplash
+![We did it!](../assets/images/ethereum-stablecoin/ian-schneider-PAykYb-8Er8-unsplash.jpg)
+> Photo by Ian Schneider on Unsplash
 
-Not the optimal 
+Web3 applications and systems pose their own opportunities as well as challenges.  
+Striking the right balance between usage requirements and what is available by the underlying platforms is key. 
+When done right, it can result in applications that can scale globally instantly. 
 
+I hope this blog post gave you an initial direction of  
+* how to approach similar problems, and 
+* which tools to reach for.
 
-![Kaleido architecture](../assets/images/ethereum-stablecoin/kaleido-architecture.png)
-
+Keep building! 
 
 # Footnotes
 
-1. <a name="footnote_1"></a>In true narrow bank form part of USDT/C's revenue stream is arbitraging between offering zero 
+1. <a name="footnote_1"></a>In true narrow bank form, part of USDT/C's revenue stream is arbitraging between offering zero 
 yield (for depositors) and receiving interest from converting USD balances into interest-bearing instruments (e.g. bonds)
 2. <a name="footnote_2"></a>One example is bank account details which is PII and could be used in banking fraud. Another 
-   example is customer [consent authorisation links][12] and consent auth. tokens.   
-   Though not explicitly documented, in most banks' case these are single use. A malicious actor intercepting them could
-   just make a failed attempt just to "consume" them and invalidate an otherwise valid customer flow.
+   example is customer [consent authorisation links][12] and consent authorisation tokens.   
+   Though not explicitly documented, in most banks' case these are single use. If unencrypted, a malicious actor could
+   intercept them, make a failed attempt just to "consume" them and invalidate an otherwise valid customer flow.
 3. <a name="footnote_3"></a>Even though there are no vulnerabilities, these methods are marked as deprecated. That is 
    something to keep in mind in this approach. 
 4. <a name="footnote_4"></a>All blockchains make account public keys visible/retrievable for signature verification. 
@@ -732,7 +819,7 @@ yield (for depositors) and receiving interest from converting USD balances into 
    derived from a [different elliptic curve][20] (e.g. [ECDSA][21] for Ethereum).     
 
 
-# <a name="annex1"></a>Annex 1: Installing Metamask, connecting to Goerli, using faucets, etc 
+# <a name="annex1"></a>Annex 1: Installing Metamask, connecting to Sepolia, using faucets, etc 
 
 > HERE BE DRAGONS!! 🐉🐉  
 > Be extremely careful, which network you are connected to AT ALL TIMES when in test/development. Sending mainnet ETH to
@@ -751,13 +838,13 @@ Let's start by installing the Metamask browser extension from the [official webs
 * Metamask is now installed in your browser's extensions panel.  
   ![Metamask installed](../assets/images/hello-world-nft/metamask-installed.png)
 
-* Select the Goerli network from the drop-down.  
-  If you cannot see Goerli, you may need to toggle showing more networks.   
-  ![Select Goerli](../assets/images/chainlink-oracle/select-goerli.png)
+* Select the Sepolia network from the drop-down.  
+  If you cannot see Sepolia, you may need to toggle showing more networks.   
+  ![Select Sepolia](../assets/images/ethereum-stablecoin/select-sepolia.png)
 
 * Next up is funding our Metamask with testnet ETH.  
-  Select one of the [Goerli faucets][56] and use your Metamask account address to receive.  
-  ![Copy address](../assets/images/chainlink-oracle/copy-address.png)
+  Select one of the [Sepolia faucets][66] and use your Metamask account address to receive.  
+  ![Copy address](../assets/images/ethereum-stablecoin/copy-address.png)
 
 * We will use 2 accounts from the same wallet, pretending we are different actors.  
   Go to the `Account Details` of the default Metamask account. Click the pencil and rename to `TPP` so we know what
@@ -776,10 +863,10 @@ Let's start by installing the Metamask browser extension from the [official webs
   Export the keys for both `TPP` and `Payer`.
 
 * Check your balance on both accounts; we are all set for testing.    
-  ![Credited assets](../assets/images/chainlink-oracle/assets.png)
+  ![Credited assets](../assets/images/ethereum-stablecoin/assets.png)
 
-* Once the `ProvableGBP` contract is deployed to Goerli, we will need to make Metamask aware of the new token to track.  
-  Click on the `Payer` account and add the contract's address (link `Import token`)  
+* Once the `ProvableGBP` contract is deployed to Sepolia, we will need to make Metamask aware of the new token to 
+  track its balance. Click on the `Payer` account and add the address of your contract (link `Import token`).  
   ![Import token](../assets/images/ethereum-stablecoin/import-token.png)
 
 
@@ -807,8 +894,8 @@ Let's start by installing the Metamask browser extension from the [official webs
    [21]: https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm
    [22]: https://en.wikipedia.org/wiki/Hardware_security_module
    [23]: https://github.com/sgerogia/hello-stablecoin
-   [24]: https://github.com/sgerogia/hello-stablecoin-2/blob/v1/chain/hardhat.config.ts
-   [25]: https://github.com/sgerogia/hello-chainlink/blob/main/hardhat.config.js
+   [24]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/hardhat.config.ts
+   [25]: https://sgerogia.github.io/Chainlink-Oracle/
    [26]: https://docs.openzeppelin.com/contracts/4.x/wizard
    [27]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L77
    [28]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L25
@@ -819,8 +906,8 @@ Let's start by installing the Metamask browser extension from the [official webs
    [33]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L132
    [34]: https://github.com/sgerogia/hello-stablecoin/blob/v1/chain/contracts/ProvableGBP.sol#L147
    [35]: https://github.com/sgerogia/hello-stablecoin/blob/v2/chain/test/ProvableGBP_base_test.ts
-   [36]: https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_e2e_flow_test.ts
-   [37]: https://github.com/sgerogia/hello-stablecoin-2/blob/v2/chain/test/ProvableGBP_mintRequest_test.ts
+   [36]: https://github.com/sgerogia/hello-stablecoin/blob/v2/chain/test/ProvableGBP_e2e_flow_test.ts
+   [37]: https://github.com/sgerogia/hello-stablecoin/blob/v2/chain/test/ProvableGBP_mintRequest_test.ts
    [38]: https://hardhat.org/hardhat-runner/docs/advanced/create-task
    [39]: https://www.bankofapis.com/products
    [40]: ../assets/resources/openbanking-stablecoin/sandbox_data.yaml
@@ -849,5 +936,20 @@ Let's start by installing the Metamask browser extension from the [official webs
    [63]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/cmd/main.go#L24
    [64]: https://github.com/sgerogia/hello-stablecoin/blob/v6/Makefile#L4
    [65]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client/event/impl/event_e2e_test.go
-
+   [66]: https://ethereum.org/en/developers/docs/networks/#sepolia
+   [67]: https://app.infura.io/login
+   [68]: https://trufflesuite.com/ganache/
+   [69]: https://www.ledger.com/academy/crypto-on-and-off-ramps-say-what
+   [70]: https://eips.ethereum.org/EIPS/eip-1077
+   [71]: https://tlsnotary.org/
+   [72]: https://openbankinguk.github.io/read-write-api-site3/v3.1.10/resources-and-data-models/aisp/Balances.html
+   [73]: https://github.com/MetaMask/metamask-extension/issues/8152
+   [74]: https://github.com/sgerogia/hello-stablecoin/tree/v1
+   [75]: https://github.com/sgerogia/hello-stablecoin/tree/v2
+   [76]: https://github.com/sgerogia/hello-stablecoin/tree/v3
+   [77]: https://github.com/sgerogia/hello-stablecoin/blob/v6/Makefile#L12
+   [78]: https://github.com/sgerogia/hello-stablecoin/blob/v6/tpp-client.toml
+   [79]: https://medium.com/metamask/metamask-api-method-deprecation-2b0564a84686
+   [80]: https://coinguides.org/evm-blockchains-add-evm-network/
+   [81]: https://scrt.network/
    
