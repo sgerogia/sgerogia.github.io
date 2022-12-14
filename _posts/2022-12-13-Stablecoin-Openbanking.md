@@ -747,7 +747,14 @@ We just had an automated ERC-20 mint, in response to a transfer of fiat, all vis
 ![Technical discussion](../assets/images/ethereum-stablecoin/charlesdeluvio-Lks7vei-eAg-unsplash.jpg)
 > Photo by charlesdeluvio on Unsplash
 
-This implementation and approach is by no means perfect. It has a number of issues, which would need correction or 
+The first thing to note about our system is that it is currency-agnostic.  
+We just need to  
+* change the ERC-20 token code in the contract (e.g. `PUSD`, `eRupee`), and
+* connect our backend to a different OpenBanking API, giving us access to payments in a different fiat currency.  
+  This is the benefit of introducing standardized API abstractions (like OpenBanking), over disparate underlying resources
+  (like payment rails).
+
+On the other hand, this implementation and approach is by no means perfect. It has a number of issues, which would need correction or 
 mitigation before considered anywhere near mature. Here is a non-exhaustive list. 
 
 **Product-related**
@@ -771,9 +778,14 @@ mitigation before considered anywhere near mature. Here is a non-exhaustive list
      with completed mint transactions.
 
 **Technical**   
+* We have not used a [proxy contract][82].  
+  This is a standard architectural pattern to ensure transparent upgradeability of our logic. I have omitted it here for
+  brevity and clarity.
 * The `authGranted` method is redundant.  
-  We could have reduced the number of interactions by redirecting from the bank back to the TPP process and picking up
-  the authorisation `code` from there. This would also reduce the surface are for network errors.
+  We could have reduced the number of interactions by redirecting from the bank back to a callback URL exposed by the 
+  TPP process. This would have picked up and used the authorisation `code`. This would reduce the surface area for 
+  network errors by reducing interactions. It would also reduce the transparency of our protocol, as there would not be 
+  an on-chain interaction that the Payer completed the authorisation.
 * The current implementation has very little fault tolerance.  
   Everything is kept in memory and error correction is an afterthought. As one would expect with a PoC.
 * The current implementation has very poor parallelization.  
@@ -952,4 +964,5 @@ Let's start by installing the Metamask browser extension from the [official webs
    [79]: https://medium.com/metamask/metamask-api-method-deprecation-2b0564a84686
    [80]: https://coinguides.org/evm-blockchains-add-evm-network/
    [81]: https://scrt.network/
+   [82]: https://blog.openzeppelin.com/proxy-patterns/
    
