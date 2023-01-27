@@ -153,7 +153,7 @@ tokenomics,...).
 A good example of the trade-offs in the decision-making is the case of [dYdX][10]. They started out as a dApp on Ethereum,
 but eventually decided to build their own app-chain to improve their scalability and performance.
 
-## Developers, developers, developers
+## <a name="developers"></a>Developers, developers, developers
 
 ![Developers, developers!](../assets/images/scaling-chains/developers.gif)
 > Image from tenor.co
@@ -237,24 +237,28 @@ their users and developers.
 
 Now that we have the destination, let's define our starting point and set some requirements for the "journey". 
 
-### Starting point 
+### <a name="starting_point"></a>Starting point 
 
-Our imaginary chain is a well-established player in the wider blockchain ecosystem.<a name="footnote_5"></a>  
+> Throughout this article I will call both our imaginary chain and its token XYZ. 
+
+The XYZ chain is a well-established player in the wider blockchain ecosystem.<a name="footnote_5"></a>  
 
 It already has a few million users (active addresses) on it. Almost the entirety of this user base comes from a very 
-successful single app.<sup>[6](#footnote_6)</sup> This gives it a good moat compared to the competition and a ready user 
-community with which to entice 3rd party developers.  
+successful single app, to which they are very loyal.<sup>[6](#footnote_6)</sup> This gives it a good moat compared to 
+the competition and a ready user community with which to entice 3rd party developers.  
 
-The chain is implemented using the Cosmos SDK and allows EVM-compatible smart contract  development. It  already has a 
+XYZ is implemented using the Cosmos SDK and allows EVM-compatible smart contract  development. It  already has a 
 number of dApps deployed on it. It has a reputation for stability, but it ranks lower than other L1s in number of dApps
 deployed.  
 It has a high market cap, say top 50 or top 20; in other words it is not insignificant. However it's DeFi ecosystem is 
 not as developed as other chains: the Total Value Locked (TVL) is low compared to other chains.
 
-In summary, the chain's team has "something". They do not start from zero; there is an existing user base, which should 
-not be jeopardised. So any decision has to consider not only the upside opportunity, but also the downside risk.
+In summary, XYZ's team have "something" in their hands; they do not start from zero. There is an existing user base, which should 
+not be jeopardised. Any decision has to consider not only the upside opportunity, but also the downside risk.
 
 ### Requirements
+
+Based on the discussion so far, we have some realistic requirements. Let's discuss them briefly, in semi-random order.
 
 * **Tech stack**
 Our chain is built using the Cosmos SDK, so there is existing know-how in the team and the ecosystem.  
@@ -273,25 +277,49 @@ system**. This will allow them to test candidate technical solutions and to gaug
 closer to the goal.
 
 * **Stability >> bleeding edge**  
-*Guiding principle*. This comes from our discussions. chain’ **moat is the [chain](http://chain) user base**; technology is the co-pilot to help maintain and expand it.  
+This is a general *guiding principle*, a value.  
+As discussed in [Starting point](#starting_point) the chain’s moat is the existing user base. In that regard, the 
+technical team has to seriously consider the potential downside of any risky or untested technical solution. Any 
+technological improvements will not be done for technology's sake; instead technology is the tool to maintain and expand 
+the existing user base.  
 
+* **Based on “serious” open source**  
+This is a restriction, which comes as a natural corollary of the above principle. If a chain's (or any product/service for 
+that matter), [USP][20] is not cutting-edge technology, then the chain is an *integrator rather than an inventor*.<sup>[7](#footnote_7)</sup>
+Any technical enhancements and new building blocks should map to well-maintained open-source repositories.
 
-North star metric
-End goal 
-Tokenomics
+* **EVM compatibility**  
+This is a [1-way door decision][22]. In the Cosmos ecosystem there is the optionality of integrating different 
+smart contract VMs (EVM, CosmWasm, Gno.land). In practice this is a decision which has far-reaching consequences in the 
+execution and future adoption by developers.  
+As discussed in the [Introduction](#developers), the EVM/Solidity ecosystem has the **best developer experience** by far,
+through sheer community size and tooling availability.  
+Therefore, XYZ chain will find it hard to economically compete for developer attention<sup>[8](#footnote_8)</sup> if it 
+does not offer EVM compatibility. 
 
-Building blocks vs monoliths
+* **Bridges to other chains**  
+This is another thing to keep in mind: interoperability across chains increases the reach and utility of an L1. On the 
+other hand [cross-chain bridges][25] remain one of the biggest sources of vulnerabilities in the blockchain world. This 
+further restricts the technology choices in the current landscape. The Cosmos SDK offers secure, native bridging via 
+[IBC][24] out-of-the-box. Reaching to other blockchain ecosystems requires either technology-enabled native bridging, or 
+maintaining compatibility with existing, battle-tested bridges.
 
-This section lists the known priorities and constraints for scaling up chain. For each one there is a brief discussion of its implications.
+* **Compound XYZ token utility**  
+This is another guiding principle. Almost all L1s (XYZ included) start their existence with a [genesis token distribution][23],
+part of the tokens going to the team's treasury. This works towards aligning incentives for long-term success.  
+In an existing and developed ecosystem, like XYZ, there is a strategic intent to not "cannibalize" the existing token, e.g. 
+by introducing a dependency to a new or 3rd party token. Instead the goal must always be to *compound value accrual*. 
+This works in favour of everyone involved: tokens in treasury, RoI for partners’ validation infrastructure, ecosystem 
+participants.  
+In brief, any solution must avoid any dependency on external tokens or dilution of utility of the existing XYZ token.
 
-1. 
-2. 
-3. **Single, composable chain**: *1-way door*. Rules out any Lightning-like side-chain solutions (e.g. for gaming payments).
-4. **EVM compatible**: *1-way door*. Though in theory the option for a different VM is open, in practice the EVM/Solidity ecosystem has the **best developer experience** by far.
-5. **chain v1 utility & XYZ token**: *1-way door*. There is a strategic intent to not cannibalize chain, but instead **compound value accrual** (tokens in treasury, RoI for partners’ validation infrastructure, ecosystem). This extends to avoiding any dependency on external tokens.
-6. **Based on “serious” open source**: *Restriction*. chain (at its current phase) prefers to be an **integrator rather than an inventor**. Hence the proposed solution and its building blocks should map to existing/active repositories.
-7. **Bridges to existing EVMs**: *Restriction*. This further restricts the technology choices in the current landscape. Either aim for technology-enabled native bridging, or maintain compatibility with existing, battle-tested bridges.
-
+* **Single, composable chain**  
+Last but not least, XYZ chain should remain a composable chain. This is another 1-way door decision. A chain can increase 
+its throughput via side-chains or channels (e.g. [Lightning][26] for Bitcoin). These channels are extremely effective 
+when the chain is single-purpose (like value transfer for Bitcoin). In general purpoise chains introducing use-case-specific 
+side channels can quickly lead to confusion and poor choices.  
+Should there be a side-chain per market vertical (e.g. gaming, DeFi)? Or per transaction type? How do ecosystem 
+participants decide correctly which one to join? 
 
 # State of the world
 
@@ -448,6 +476,12 @@ The chain utilizes the existing DAC SDK & layer for storage.
    "destination" in the face of trade-offs and restrictions.
 6. <a name="footnote_6"></a>There are plenty of examples of single "killer" apps acting as on-ramp for users on a chain:
   Stepn for Solana, Sweatcoin on ???, chain for chain (to an extent), etc
+7. <a name="footnote_7"></a>It is worth re-stating here the difference between invention and innovation. Something I 
+   have covered in my [investment-related blog posts][21]. 
+8. <a name="footnote_8"></a>It is important stress the word "economically" in this context. Chains introducing new smart
+   contract languages will need to invest a lot of time and effort to educate developers on the new language. This 
+   inevitably translates into a lot of community marketing and development effort (articles, hackathons, grants). This is
+   a game for deep-pocketed chain teams. 
 
 
 
@@ -470,3 +504,10 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [17]: https://chat.openai.com/
   [18]: https://pontem.network/posts/comparison-of-the-top-10-smart-contract-programming-languages-in-2021
   [19]: https://studio.glassnode.com/metrics?a=BTC&m=addresses.ActiveCount
+  [20]: https://snov.io/glossary/unique-selling-point/
+  [21]: https://sgerogia.github.io/Angel-investing-Part-3/#:~:text=And%20a%20word%20on%20invention
+  [22]: https://www.linkedin.com/pulse/making-decisions-one-way-two-way-doors-alfons-staerk/
+  [23]: https://smithandcrown.com/research/introduction-to-token-distribution-mechanisms/ 
+  [24]: https://medium.com/@datachain/how-cosmoss-ibc-works-to-achieve-interoperability-between-blockchains-d3ee052fc8c3
+  [25]: https://blog.chainalysis.com/reports/cross-chain-bridge-hacks-2022/
+  [26]: https://www.bitcoin.com/get-started/what-is-lightning-network/
