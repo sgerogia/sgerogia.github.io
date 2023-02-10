@@ -14,7 +14,7 @@ modularity can scale a L1 to the next level.
 
 # Introduction 
 
-Let's start with a truism: there is no right-wrong approach to scaling up a blockchain and increasing its 
+Let's start with a truism: there is no black-and-white approach to scaling up a blockchain and increasing its 
 transactions per second (TPS).  
 Just as with any software system, there is a series of trade-offs to be made, based on restrictions and available tools
 and technologies. 
@@ -206,8 +206,8 @@ Let's time-travel to the future and start with the...
 
 ## Vision
 
-Here is a bold statement.  
-> In a few years there will be millions of tokens and L3 chains, tokenizing and representing any asset imaginable.  
+Here is a bold-but-not-so-much statement.  
+> In a few years there will be millions of dApps, tokens and L3 chains, tokenizing and representing any asset imaginable.  
 
 Let's work backwards from this statement.  
 The Internet gives us a good prior example of exponential technology adoption. The number of websites has been on an 
@@ -215,10 +215,10 @@ exponential trajectory for the last 20 years. From 0 at the beginning of the '90
 ![Website growth](../assets/images/scaling-chains/websites.png)
 > Chart from Statista
 
-Websites are a great parallel to web3 dApps and chains. They are both collections of data and logic, with progressively higher 
-orders of user engagement and utility.
+Websites (and online systems in general) are a great parallel to web3 dApps and chains. They are both collections of 
+data and logic, with progressively higher orders of user engagement and utility.
 
-The crypto space is clearly following the Internet adoption curve, no matter [which metric][19] we pick. This has 2 
+The crypto space is clearly following the Internet adoption curve, no matter [which metric][19] we pick. This has two 
 important consequences for aspiring general-purpose L1s.
 
 * **Volumes**  
@@ -233,7 +233,7 @@ with a continuum of needs
 L1s that aspire to take market share should have the performance, building blocks and tooling to enable this future for 
 their users and developers.
 
-## The journey  
+## Preparing for the journey  
 
 Now that we have the destination, let's define our starting point and set some requirements for the "journey". 
 
@@ -258,37 +258,37 @@ not be jeopardised. Any decision has to consider not only the upside opportunity
 
 ### Requirements
 
-Based on the discussion so far, we have some realistic requirements. Let's discuss them briefly, in semi-random order.
+Based on the discussion so far, we have some realistic requirements. Let's list them briefly, in semi-random order.
 
-* **Tech stack**
+1. **Tech stack**
 Our chain is built using the Cosmos SDK, so there is existing know-how in the team and the ecosystem.  
 Any decision on changing the tech stack should not be taken lightly. 
 
-* **North star metric**  
+2. **North star metric**  
 We need a quantifiable target to act as a "North star" measure of scalability progress. This is how both internal teams 
 as well as the community will unambiguously assess the success of the effort.  
 
-The most obvious and widely understood metric is transaction throughput. The target figure must be maintained under 
+The most obvious and widely understood metric is *transaction throughput*. The target figure must be maintained under 
 various network loads and conditions. Therefore instead of aiming for *transactions per second* (which could fluctuate 
 wildly), it is better to aim and measure *transactions per day* (where noise can be smoothed out). 
 
 A corollary of aiming for a specific throughput, is that the team would need to have a **dedicated stress-test harness 
-system**. This will allow them to test candidate technical solutions and to gauge early if they would bring the system
+system**. This will allow them to test candidate technical solutions and to gage early if they would bring the system
 closer to the goal.
 
-* **Stability >> bleeding edge**  
+3. **Stability >> bleeding edge**  
 This is a general *guiding principle*, a value.  
 As discussed in [Starting point](#starting_point) the chain’s moat is the existing user base. In that regard, the 
 technical team has to seriously consider the potential downside of any risky or untested technical solution. Any 
 technological improvements will not be done for technology's sake; instead technology is the tool to maintain and expand 
 the existing user base.  
 
-* **Based on “serious” open source**  
+4. **Based on “serious” open source**  
 This is a restriction, which comes as a natural corollary of the above principle. If a chain's (or any product/service for 
 that matter), [USP][20] is not cutting-edge technology, then the chain is an *integrator rather than an inventor*.<sup>[7](#footnote_7)</sup>
 Any technical enhancements and new building blocks should map to well-maintained open-source repositories.
 
-* **EVM compatibility**  
+5. **EVM compatibility**  
 This is a [1-way door decision][22]. In the Cosmos ecosystem there is the optionality of integrating different 
 smart contract VMs (EVM, CosmWasm, Gno.land). In practice this is a decision which has far-reaching consequences in the 
 execution and future adoption by developers.  
@@ -297,23 +297,25 @@ through sheer community size and tooling availability.
 Therefore, XYZ chain will find it hard to economically compete for developer attention<sup>[8](#footnote_8)</sup> if it 
 does not offer EVM compatibility. 
 
-* **Bridges to other chains**  
+6. **Bridges to other chains**  
 This is another thing to keep in mind: interoperability across chains increases the reach and utility of an L1. On the 
-other hand [cross-chain bridges][25] remain one of the biggest sources of vulnerabilities in the blockchain world. This 
+other hand [cross-chain bridges][25] remain one of the biggest [sources of vulnerabilities][27] in the blockchain world. This 
 further restricts the technology choices in the current landscape. The Cosmos SDK offers secure, native bridging via 
 [IBC][24] out-of-the-box. Reaching to other blockchain ecosystems requires either technology-enabled native bridging, or 
-maintaining compatibility with existing, battle-tested bridges.
+maintaining compatibility with existing, battle-tested bridges.  
+![Map of Zones](../assets/images/scaling-chains/mapofzones.png)  
+> IBC-enabled chain interactions, by [mapofzones.com][29]
 
-* **Compound XYZ token utility**  
+7. **Compound XYZ token utility**  
 This is another guiding principle. Almost all L1s (XYZ included) start their existence with a [genesis token distribution][23],
-part of the tokens going to the team's treasury. This works towards aligning incentives for long-term success.  
+part of which goes to the team's treasury. This works towards aligning incentives for long-term success.  
 In an existing and developed ecosystem, like XYZ, there is a strategic intent to not "cannibalize" the existing token, e.g. 
-by introducing a dependency to a new or 3rd party token. Instead the goal must always be to *compound value accrual*. 
+by introducing a dependency to a new or 3rd party token. The goal must instead be to *compound value accrual*. 
 This works in favour of everyone involved: tokens in treasury, RoI for partners’ validation infrastructure, ecosystem 
 participants.  
 In brief, any solution must avoid any dependency on external tokens or dilution of utility of the existing XYZ token.
 
-* **Single, composable chain**  
+8. **Single, composable chain**  
 Last but not least, XYZ chain should remain a composable chain. This is another 1-way door decision. A chain can increase 
 its throughput via side-chains or channels (e.g. [Lightning][26] for Bitcoin). These channels are extremely effective 
 when the chain is single-purpose (like value transfer for Bitcoin). In general purpoise chains introducing use-case-specific 
@@ -321,59 +323,79 @@ side channels can quickly lead to confusion and poor choices.
 Should there be a side-chain per market vertical (e.g. gaming, DeFi)? Or per transaction type? How do ecosystem 
 participants decide correctly which one to join? 
 
-# State of the world
+# Moving forward
 
 ![The world](../assets/images/scaling-chains/nasa-vhSz50AaFAs-unsplash.jpg)
 > Photo by NASA on Unsplash
 
-## Overall
+Now that we have established some guiding principles and requirements, we can start to look at the options available 
+to us. 
+Let's start with some... 
 
-The blog post splits the upgrade of chain in Phases 1 & 2. This makes sense as a **safe path to scalability**, allowing for **milestones of delivered ecosystem value** along the way.
+## Low-hanging fruit
 
-- Phase 1 groups together all the “vertical” improvements. 
-These **incremental changes** are relatively well-bound, mostly orthogonal to each other (i.e. parallel implementation) and will be tested / deployed on an existing ecosystem.
-Risks:
-    - Improvements to Cosmos SDK are not merged to main.
-    This would result in the chain team having to maintain forks, draining resources in the long run.
-    - Improvements are not entirely orthogonal.
-    Say, “mempool prioritization” and “storage optimization” end up interacting in a negative way.
-    Though they can potentially be developed in parallel, changes must be stress-tested for perf. improvements individually.
-- Phase 2 talks about the “horizontal” improvements.
-These are much wider in scope, with a heavy dependence on R&D and availability of reliable external technology. 
-The blog post seems to imply a delivery order as 1) rollups, and 2.1) smart contract parallelization, 2.2) storage modularization.
+**Cosmos SDK & Tendermint improvements**  
+Upstream improvements is part-and-parcel of a vibrant ecosystem (e.g. for [Tendermint Core][30]).  
+These range from peer-to-peer networking improvements, to upgrades to the [ABCI interface][31] and [mempool prioritisation 
+refactoring][32]. 
+Keeping up with these is a must, bringing some performance improvements to the chain.
 
-The following sections follow this breakdown but changing the delivery order, laying out the arguments and nuances in each section.
+**Block adjustments**  
+This is another place to look.  
+* Increasing the [block size][28] ("how many transactions can we fit") 
+* How frequently blocks are minted at the consensus layer, and 
+* Tweaking the block creation logic
 
-## Parallelization of execution
+are all pulls and levers which can potentially increase throughput. 
+
+There are two things to note with all of these:  
+* They are all incremental performance optimisations, not step changes. Performance will probably increase as a 
+percentage, not by a factor of 2-3-10x.
+* There are diminishing returns to each of these. They all directly affect the requirements on the validator nodes 
+capacity and connectivity. There is a cut-off point where it might become unfeasible to run a validator node, if 
+the block adjustment are out of whack.
+
+**Storage optimization** 
+A large part of validator node resources is consumed by managing and storing the chain's state in the local database.  
+In the Cosmos SDK, all building blocks of logic (a.k.a modules) store their data in the [internal key-value store][33]. 
+Some modules will have a disproportionate load on the node and will become critical (e.g. the EVM module, an order book 
+module in a DEX chain, etc).  
+Focusing on optimising the storage of these modules (e.g. optimising data structures, decoupling from the default 
+storage) can potentially bring performance improvements.   
+
+With quick wins out of the way, we need to think of potentials for step change; orders of magnitude improvements. Let's 
+look at some more ambitious options.
+
+## Option 1 - Parallelization of execution
 
 **General chains**
 
-- Generally parallelized chains are based on the insight that **most transactions in the same block affect different parts of the global state graph**. Either via explicit transaction classification (Zilliqa[[1]](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c)) or by optimistic locking of the global state and hard-coding inter-contract dependencies (Aptos, Sui[[2]](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c)).
+- Generally parallelized chains are based on the insight that **most transactions in the same block affect different parts of the global state graph**. Either via explicit transaction classification (Zilliqa[[1]]) or by optimistic locking of the global state and hard-coding inter-contract dependencies (Aptos, Sui[[2]]).
 - In the case of chain, becoming a generally parallel chain would mean a complete re-write. Even with the presence of ABCI++, all transactions have to be decoded. Therefore a number of SDK modules would need to be updated/rewritten (bank for account-to-account, evm for smart contracts,…).
-  All this is against [Prio. 6](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c).
+  All this is against [Prio. 6].
 
 **EVM parallelization**
 
 - Parallelization of EVM execution seems like a more contained piece of work, considering the modular nature of Cosmos. A breakthrough here would benefit chain v1 immediately.
-- EVM state graph understanding can range from explicit (EIP-2930) to implicit (e.g. bytecode heuristics [[3]](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c))
+- EVM state graph understanding can range from explicit (EIP-2930) to implicit (e.g. bytecode heuristics [[3]])
 - Ethereum adoption of EIP-2930 will “force” the corresponding work on the Cosmos EVM side to maintain compatibility. This would provide the needed open-source support, but it is still unknown when it would happen. In any case, it forces a major re-write work on updating the EVM execution model.
 - BSC and [NodeReal Parallel EVM](https://www.bnbchain.org/en/blog/new-milestone-the-implementation-of-parallel-evm-2-0/) is a working open-source parallel EVM.
   Unfortunately, BSC is not Ethermint-compatible, so their approach is not directly usable. This would require a thorough PoC.
 - Risks
-    - This requires investigation/PoC by chain team; the eventual result would  require sec. audits. In an extreme case, the chain team might need to maintain a Cosmos EVM fork (against [Prio 6](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c)).
+    - This requires investigation/PoC by chain team; the eventual result would  require sec. audits. In an extreme case, the chain team might need to maintain a Cosmos EVM fork (against [Prio 6]).
     - On low chain loads overall performance may decrease after the parallelisation upgrades (see Aptos whitepaper findings).
     - As stated above, a breakthrough would immediately uplift chain v1 performance.
 
 
-## Data availability (storage modularization)
+## Option 2 - Data availability (storage modularization)
 
 - Increasing blockchain speed by offloading block storage to an external component is a subject studied in length, especially by the [Ethereum community](https://ethereum.org/en/developers/docs/data-availability/).
 - Though mostly referenced in the context of a zk-rollup, a data availability layer can accelerate any chain connected to it. This is true for chain v1 and v2. chain v1 is already a general purpose chain, appealing to high-throughput apps, like gaming.
-- dApp storage needs are **not one-size-fits all; they fall along a ladder of increasing security**[[4]](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c). In the ideal end state
+- dApp storage needs are **not one-size-fits all; they fall along a ladder of increasing security**[[4]]. In the ideal end state
     - different dApps would have access to different storage options, depending on their needs, and
     - access to the data availability layer is abstracted behind an SDK/API.
 - For these reasons it makes sense to **investigate storage availability as a separate building block**, not exclusively tied to the chain v2 chain’s roadmap.
-- From a code PoV a Cosmos-compatible reference implementation already exists ([Celestia](https://celestia.org/)) and is following a modular architecture approach. Celestia is built as a L0 and will eventually have its own token (against [Prio 5](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c)).
+- From a code PoV a Cosmos-compatible reference implementation already exists ([Celestia](https://celestia.org/)) and is following a modular architecture approach. Celestia is built as a L0 and will eventually have its own token (against [Prio 5]).
   The chain team can **use a Celestia fork as a PoC starting point** and investigate
     - the extent of out-of-the-box reusability vs custom development (i.e. SDK module re-use).
     - the best **tokenomics model** for the staked DAC option (new DAC token vs re-use of XYZ vs PoA)
@@ -385,33 +407,33 @@ The following sections follow this breakdown but changing the delivery order, la
         - the chain team creates some realistic dApps to verify the usability of the data layer.
 
 
-## Rollups
+## Option 3 - Rollups
 
 **ZK vs Optimistic**
 
 - Picking between the 2 rollup technologies is a major 1-way door, **which the blog post does not cross** (possibly intentionally).
 - Optimistic rollups are simpler to implement, have lower computation costs and, hence, have the **potential for higher TPS throughput.** Due to their nature, they impose a multi-day “exit settlement” time window (when moving out of the rollup, to allow for externally submitted fraud proof).
 - zk-Rollups are much harder to implement, requiring much more computation and an upfront trust structure (provers). They offer immediate settlement.
-- [Prio 7](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c) implies a seamless user experience w.r.t. bridging. In addition, one of the main benefits of the Cosmos ecosystem is instant finality. Introducing optimistic rollups would “break” these promises.
+- [Prio 7] implies a seamless user experience w.r.t. bridging. In addition, one of the main benefits of the Cosmos ecosystem is instant finality. Introducing optimistic rollups would “break” these promises.
   Therefore, **zk-Rollups appears as the best option to pursue**.
 
 **EVM compatibility**
 
-- [Prio 3](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c) and [Prio 4](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c) make it clear that chain v2 must offer a general computation engine. So offering a VM is almost without question.
+- [Prio 3] and [Prio 4] make it clear that chain v2 must offer a general computation engine. So offering a VM is almost without question.
 - zk-EVM approaches are split in 2 categories
   - 1st generation bespoke VMs (e.g. [Cairo](https://starkware.co/cairo/))
   - An emerging cluster of 2nd generation zk-EVMs ([zkSync](https://docs.zksync.io/zkevm/#general), [Polygon](https://github.com/0xpolygonhermez), [Scroll](https://scroll.io/))
-- From the chain point-of-view, [Prio 4](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c) points not only to EVM compatibility, but **cross-stack developer tooling compatibility and re-use**. I.e. giving dApps the ability to port from chain v1 to v2 with minimal-to-no changes.
+- From the chain point-of-view, [Prio 4] points not only to EVM compatibility, but **cross-stack developer tooling compatibility and re-use**. I.e. giving dApps the ability to port from chain v1 to v2 with minimal-to-no changes.
   This makes a **2nd generation zk-EVM a better choice**, with 3 different option to explore.
 - From the information available at the time of writing
   - zkSync: Gated mainnet. Effectively closed source. Critical parts of the code (Prover) are not available, while others do not build intentionally.
   - Scroll: Pre-alpha testnet. Open source with zero documentation. Seems to be at least 1y behind zkSync in terms of maturity.
   - Polygon: Testnet. The best documented of the 3, at 97% EVM opcode coverage. Seems the most promising option.
-- A future strategic opportunity with zk-Rollups is through **standardization of circuit/prover logic across ecosystems**. This would lead to (almost) native bridging of assets between compatible zk-Rollups ([Prio 7](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c)). This is something worth exploring by chain through partnerships.
+- A future strategic opportunity with zk-Rollups is through **standardization of circuit/prover logic across ecosystems**. This would lead to (almost) native bridging of assets between compatible zk-Rollups ([Prio 7]). This is something worth exploring by chain through partnerships.
 - Risks
   - Maybe none of the 3 options are ready for use within chain’ timeframe. E.g. zkSync remains closed source for an unknown period of time, Polygon has bugs, etc.
     This could be a real threat. A possible mitigation would be by joining forces with one of the above teams to assist.
-  - The chosen prover circuit may not be performant, requiring specialized hardware and leading to validator centralisation[[5]](https://www.notion.so/Stelios-Gerogiannakis-Lead-Architect-assignment-4b239887d71147b7a7335e316284275c). This is an area that requires active R&D and leveraging partnerships.
+  - The chosen prover circuit may not be performant, requiring specialized hardware and leading to validator centralisation[[5]]. This is an area that requires active R&D and leveraging partnerships.
  
 # A path forward
 
@@ -511,3 +533,10 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [24]: https://medium.com/@datachain/how-cosmoss-ibc-works-to-achieve-interoperability-between-blockchains-d3ee052fc8c3
   [25]: https://blog.chainalysis.com/reports/cross-chain-bridge-hacks-2022/
   [26]: https://www.bitcoin.com/get-started/what-is-lightning-network/
+  [27]: https://blog.chainalysis.com/reports/cross-chain-bridge-hacks-2022/
+  [28]: https://docs.tendermint.com/main/tendermint-core/block-structure.html
+  [29]: https://mapofzones.com/home?columnKey=ibcVolume&period=24h&mapType=2d
+  [30]: https://github.com/tendermint/tendermint/issues?q=is%3Aissue+is%3Aopen+%22improvement%22
+  [31]: https://github.com/tendermint/tendermint/blob/master/docs/rfc/rfc-013-abci++.md
+  [32]: https://github.com/tendermint/tendermint/blob/master/docs/architecture/adr-067-mempool-refactor.md
+  [33]: https://docs.cosmos.network/main/core/store
