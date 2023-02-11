@@ -256,15 +256,15 @@ not as developed as other chains: the Total Value Locked (TVL) is low compared t
 In summary, XYZ's team have "something" in their hands; they do not start from zero. There is an existing user base, which should 
 not be jeopardised. Any decision has to consider not only the upside opportunity, but also the downside risk.
 
-### Requirements
+### Requirements & Priorities
 
 Based on the discussion so far, we have some realistic requirements. Let's list them briefly, in semi-random order.
 
-1. **Tech stack**
+<a name="req_1"></a>1. **Tech stack**
 Our chain is built using the Cosmos SDK, so there is existing know-how in the team and the ecosystem.  
 Any decision on changing the tech stack should not be taken lightly. 
 
-2. **North star metric**  
+<a name="req_2"></a>2. **North star metric**  
 We need a quantifiable target to act as a "North star" measure of scalability progress. This is how both internal teams 
 as well as the community will unambiguously assess the success of the effort.  
 
@@ -276,19 +276,19 @@ A corollary of aiming for a specific throughput, is that the team would need to 
 system**. This will allow them to test candidate technical solutions and to gage early if they would bring the system
 closer to the goal.
 
-3. **Stability >> bleeding edge**  
+<a name="req_3"></a>3. **Stability >> bleeding edge**  
 This is a general *guiding principle*, a value.  
 As discussed in [Starting point](#starting_point) the chain’s moat is the existing user base. In that regard, the 
 technical team has to seriously consider the potential downside of any risky or untested technical solution. Any 
 technological improvements will not be done for technology's sake; instead technology is the tool to maintain and expand 
 the existing user base.  
 
-4. **Based on “serious” open source**  
+<a name="req_4"></a>4. **Based on “serious” open source**  
 This is a restriction, which comes as a natural corollary of the above principle. If a chain's (or any product/service for 
 that matter), [USP][20] is not cutting-edge technology, then the chain is an *integrator rather than an inventor*.<sup>[7](#footnote_7)</sup>
 Any technical enhancements and new building blocks should map to well-maintained open-source repositories.
 
-5. **EVM compatibility**  
+<a name="req_5"></a>5. **EVM compatibility**  
 This is a [1-way door decision][22]. In the Cosmos ecosystem there is the optionality of integrating different 
 smart contract VMs (EVM, CosmWasm, Gno.land). In practice this is a decision which has far-reaching consequences in the 
 execution and future adoption by developers.  
@@ -297,7 +297,7 @@ through sheer community size and tooling availability.
 Therefore, XYZ chain will find it hard to economically compete for developer attention<sup>[8](#footnote_8)</sup> if it 
 does not offer EVM compatibility. 
 
-6. **Bridges to other chains**  
+<a name="req_6"></a>6. **Bridges to other chains**  
 This is another thing to keep in mind: interoperability across chains increases the reach and utility of an L1. On the 
 other hand [cross-chain bridges][25] remain one of the biggest [sources of vulnerabilities][27] in the blockchain world. This 
 further restricts the technology choices in the current landscape. The Cosmos SDK offers secure, native bridging via 
@@ -306,7 +306,7 @@ maintaining compatibility with existing, battle-tested bridges.
 ![Map of Zones](../assets/images/scaling-chains/mapofzones.png)  
 > IBC-enabled chain interactions, by [mapofzones.com][29]
 
-7. **Compound XYZ token utility**  
+<a name="req_7"></a>7. **Compound XYZ token utility**  
 This is another guiding principle. Almost all L1s (XYZ included) start their existence with a [genesis token distribution][23],
 part of which goes to the team's treasury. This works towards aligning incentives for long-term success.  
 In an existing and developed ecosystem, like XYZ, there is a strategic intent to not "cannibalize" the existing token, e.g. 
@@ -315,7 +315,7 @@ This works in favour of everyone involved: tokens in treasury, RoI for partners�
 participants.  
 In brief, any solution must avoid any dependency on external tokens or dilution of utility of the existing XYZ token.
 
-8. **Single, composable chain**  
+<a name="req_8"></a>8. **Single, composable chain**  
 Last but not least, XYZ chain should remain a composable chain. This is another 1-way door decision. A chain can increase 
 its throughput via side-chains or channels (e.g. [Lightning][26] for Bitcoin). These channels are extremely effective 
 when the chain is single-purpose (like value transfer for Bitcoin). In general purpoise chains introducing use-case-specific 
@@ -332,7 +332,7 @@ Now that we have established some guiding principles and requirements, we can st
 to us. 
 Let's start with some... 
 
-## Low-hanging fruit
+<a name="low_hanging_fruit"></a>## Low-hanging fruit
 
 **Cosmos SDK & Tendermint improvements**  
 Upstream improvements is part-and-parcel of a vibrant ecosystem (e.g. for [Tendermint Core][30]).  
@@ -366,30 +366,61 @@ storage) can potentially bring performance improvements.
 With quick wins out of the way, we need to think of potentials for step change; orders of magnitude improvements. Let's 
 look at some more ambitious options.
 
-## Option 1 - Parallelization of execution
+## Option 1 - Parallelisation of execution
 
-**General chains**
+### At transaction settlement
 
-- Generally parallelized chains are based on the insight that **most transactions in the same block affect different parts of the global state graph**. Either via explicit transaction classification (Zilliqa[[1]]) or by optimistic locking of the global state and hard-coding inter-contract dependencies (Aptos, Sui[[2]]).
-- In the case of chain, becoming a generally parallel chain would mean a complete re-write. Even with the presence of ABCI++, all transactions have to be decoded. Therefore a number of SDK modules would need to be updated/rewritten (bank for account-to-account, evm for smart contracts,…).
-  All this is against [Prio. 6].
+The latest generation of general-purpose chains like [Zilliqa][34], [Aptos][35] and [Sui][36] have a unique selling 
+proposition (USP): they offer a higher throughput via parallelisation of transaction settlement.  
+This parallelisation is based on the insight that **most transactions in the same block affect different parts of the 
+global state graph**<sup>[9](#footnote_9)</sup>. This parallelisation is made possible either via explicit transaction 
+classification (Zilliqa<sup>[10](#footnote_10)</sup>) or by optimistic locking of the global state and hard-coding 
+inter-contract dependencies (Aptos, Sui<sup>[11](#footnote_11)</sup>).
 
-**EVM parallelization**
+Transaction settlement parallelisation definitely sounds appealing. Let's take a step back and assess it in the context 
+of our imaginary chain.  
+Being a Cosmos chain means using the [Tendermint BFT consensus][38] algorithm, which has sequential execution. Moving 
+to parallel settlement would entail a complete re-write of the underlying consensus layer. Even with the availability of 
+ABCI++, all transactions would have to be decoded in order to be introspected and categorised. The changes in transaction 
+settlement (from instant finality to eventual settlement) would affect the logic of a large number of SDK modules (Bank 
+module for account balances, EVM for smart contracts,…).  
+Though not impossible, this is a major undertaking. And it would contravene our guiding principles of [stability](#req_3) 
+and [utilising existing technologies](#req_4).   
 
-- Parallelization of EVM execution seems like a more contained piece of work, considering the modular nature of Cosmos. A breakthrough here would benefit chain v1 immediately.
-- EVM state graph understanding can range from explicit (EIP-2930) to implicit (e.g. bytecode heuristics [[3]])
-- Ethereum adoption of EIP-2930 will “force” the corresponding work on the Cosmos EVM side to maintain compatibility. This would provide the needed open-source support, but it is still unknown when it would happen. In any case, it forces a major re-write work on updating the EVM execution model.
-- BSC and [NodeReal Parallel EVM](https://www.bnbchain.org/en/blog/new-milestone-the-implementation-of-parallel-evm-2-0/) is a working open-source parallel EVM.
-  Unfortunately, BSC is not Ethermint-compatible, so their approach is not directly usable. This would require a thorough PoC.
-- Risks
-    - This requires investigation/PoC by chain team; the eventual result would  require sec. audits. In an extreme case, the chain team might need to maintain a Cosmos EVM fork (against [Prio 6]).
-    - On low chain loads overall performance may decrease after the parallelisation upgrades (see Aptos whitepaper findings).
-    - As stated above, a breakthrough would immediately uplift chain v1 performance.
+### At EVM execution
 
+In general computation chains, the vast majority of transactions are smart contract operations. And EVM execution is by 
+far the most expensive part of the transaction settlement. Therefore it makes sense to focus on that.
+
+From an architecture PoV parallelization of EVM execution seems like a more contained piece of work. EVM is implemented 
+as a Cosmos SDK module, so all changes should remain transparent to the rest of the codebase.  
+From an implementation perspective, a core piece of work would
+be to understand the impact of transactions on the state graph of the EVM and identify which ones can be safely executed.
+Transaction classification can range from explicit and standards-based (e.g. see [EIP-2930][39]) to implicit and esoteric 
+(e.g. bytecode heuristics<sup>[12](#footnote_12)</sup>).  
+In terms of options there are a couple.  
+Ethereum adoption of EIP-2930 will "force" the corresponding work on the Cosmos EVM side to maintain compatibility. This 
+would provide the needed open-source support, but it is still unknown when it would actually happen. 
+Another real-world option is [NodeReal's Parallel EVM][41] adopted by Binance Smart Chain. On the downside NodeReal's EVM 
+would need some work before becoming usable by another chain.
+
+Though not immediately going against any of the principles laid above, there are a couple of risks to consider.  
+* There is no drop-in Cosmos module for parallelised EVM execution just yet. The XYZ team will need to do some 
+extensive investigation and PoCs to proceed with confidence. The eventual result would require 3rd-party security audits
+before going on mainnet. In the extreme case that the upstream Cosmos modules would not accept the pull requests, the 
+chain's team would need to maintain an EVM fork on their own. That would be against [priority 4](#req_4)).
+* On low chain loads, overall performance may actually decrease after the parallelisation upgrades. This might be 
+perceived wrongly by the community. See the [Aptos whitepaper][42] findings.
+
+In general the parallelisation of EVM execution is a promising path to explore. It should be part of the chain's 
+optimisation journey.
 
 ## Option 2 - Data availability (storage modularization)
 
-- Increasing blockchain speed by offloading block storage to an external component is a subject studied in length, especially by the [Ethereum community](https://ethereum.org/en/developers/docs/data-availability/).
+As we touched briefly in [Low-hanging fruit](#low_hanging_fruit), the storage element is a major contributor to resource 
+comsumption. In other words, a performance drag.  
+Increasing blockchain speed by offloading block storage to an external component or service is a subject studied in length, 
+especially by the [Ethereum community][43].
 - Though mostly referenced in the context of a zk-rollup, a data availability layer can accelerate any chain connected to it. This is true for chain v1 and v2. chain v1 is already a general purpose chain, appealing to high-throughput apps, like gaming.
 - dApp storage needs are **not one-size-fits all; they fall along a ladder of increasing security**[[4]]. In the ideal end state
     - different dApps would have access to different storage options, depending on their needs, and
@@ -503,8 +534,22 @@ The chain utilizes the existing DAC SDK & layer for storage.
 8. <a name="footnote_8"></a>It is important stress the word "economically" in this context. Chains introducing new smart
    contract languages will need to invest a lot of time and effort to educate developers on the new language. This 
    inevitably translates into a lot of community marketing and development effort (articles, hackathons, grants). This is
-   a game for deep-pocketed chain teams. 
-
+   a game for deep-pocketed chain teams.
+9. <a name="footnote_9"></a>2 simple examples of transactions happening in the same block:  
+   * Alice sends tokens to Max. Alice sends tokens to Bob. Alice's balance is affected by both these transactions, so 
+     they have to be executed sequentially.
+   * Alice sends to Max. Bob sends to Dave. The transactions affect separate balance, so they can be executed in parallel.
+10. <a name="footnote_10"></a>Zilliqa classifies transactions as:  
+   * account-to-account
+   * account-to-contract
+   * complex (account-to-contract-to-contract-to…)  
+   
+   This allows the chain to understand the “impact” of each type of transaction and batch/shard accordingly.
+   ![Zilliqa transaction types](../assets/images/scaling-chains/zilliqa.png)
+11. <a name="footnote_11"></a>Both chains are [Diem][37] spinoffs and follow similar design approaches.  
+    Their internal data model is using optimistic state locking to support parallel transaction execution (versioned 
+    data items). This results in “eventually settled” transactions.
+12. <a name="footnote_12"></a>Performing bytecode analysis to discover state graph dependencies (e.g. [F1][40], F2,… opcodes)
 
 
   [1]: https://en.wikipedia.org/wiki/OSI_model
@@ -540,3 +585,13 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [31]: https://github.com/tendermint/tendermint/blob/master/docs/rfc/rfc-013-abci++.md
   [32]: https://github.com/tendermint/tendermint/blob/master/docs/architecture/adr-067-mempool-refactor.md
   [33]: https://docs.cosmos.network/main/core/store
+  [34]: https://www.zilliqa.com/
+  [35]: https://aptos.dev/
+  [36]: https://sui.io/
+  [37]: https://en.wikipedia.org/wiki/Diem_(digital_currency)
+  [38]: https://tendermint.com/static/docs/tendermint.pdf
+  [39]: https://eips.ethereum.org/EIPS/eip-2930
+  [40]: https://www.ethervm.io/#F1
+  [41]: https://www.bnbchain.org/en/blog/new-milestone-the-implementation-of-parallel-evm-2-0/
+  [42]: https://aptos.dev/assets/files/Aptos-Whitepaper-47099b4b907b432f81fc0effd34f3b6a.pdf
+  [43]: https://ethereum.org/en/developers/docs/data-availability/
