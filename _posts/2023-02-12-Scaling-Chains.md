@@ -31,24 +31,24 @@ In this post, I will
 
 ## L3, L2, L1, L0... Lift-off!
 
-![L3, L2, L1,...](../assets/images/scaling-chains/charlie-wollborg-28hWxVXOQG4-unsplash.jpg)
+![L3, L2, L1,...](../assets/images/scaling-chains/charlie-wollborg-28hWxVXOQG4-unsplash.jpg "L3, L2, L1,...")
 > Photo by Charlie Wollborg on Unsplash
 
 There are different ways we could categorise blockchains. 
 The most common way is by assessing at which point of the "stack" they operate, i.e. at which layer. For this, we will 
 use the [Open Systems Interconnection (OSI) model][1] as a reference.
 
-![OSI model mapping ](../assets/images/scaling-chains/osi_mapping.drawio.png)
+![OSI model mapping](../assets/images/scaling-chains/osi_mapping.drawio.png "OSI model mapping")
 > An attempt to map between the OSI model and the blockchain layers
 
-### L1
+**L1**  
 It all started with the 1st (Bitcoin et al) and 2nd generations (Ethereum et al) of blockchains. Whether a single purpose 
 chain (e.g. Bitcoin, allowing transfer of value) or a general computation chain (e.g. Ethereum, allowing arbitrary computations), 
 they are all considered L1 chains. Their remit covers the whole stack, from peer-to-peer networking to the top-most 
 user-facing application layer. This category also includes 3rd generation chains (e.g. Solana, Binanche Smart Chain, 
 Evmos, Aptos,...); despite their differences, they all have the same top-to-bottom "footprint".
 
-### L2
+**L2**  
 Ethereum's rising popularity clashed with its fixed transaction-per-second (TPS) limit leading to [gas price surges][2] 
 and a dash to find scaling alternatives.  
 One of the options was to move the expensive computation off-chain. This led to the creation of L2 chains, which  
@@ -60,7 +60,7 @@ Different L2 solutions (e.g. [Optimism][48], [Polygon][49], [Starkware][50]) hav
 trade-offs in terms of security or decentralization. The end result is one: increase the overall TPS of the underlying 
 L1 chain by moving the expensive computation away from it.  
 
-### L0
+**L0**  
 L2s were a solution to the scalability problem, taking the existing L1 chains "for granted"; it is there, it works, let's 
 "make it great again".   
 
@@ -72,7 +72,7 @@ the foundation for other blockchains.
 Through different technology, architecture choices and trade-offs in this category we have [Polkadot][51], [Cosmos][52], 
 [LayerZero][53], [Celestia][46],...
 
-### L3
+**L3**  
 Now that we have described the other layers, it becomes a bit clearer what an L3 is.  
 L3 is a user-facing application (smart contract dApp) with its own token that is built on top of an L2. There are plenty 
 of examples here, like Uniswap [deployed on Optimism][54], Decentraland [on Polygon][55], etc.   
@@ -87,7 +87,7 @@ SDK.
 
 ## Rollups and Side-chains: What's the difference?
 
-![Not everyone's rollup](../assets/images/scaling-chains/thought-catalog-UoXLndT32Hg-unsplash.jpg)
+![Not everyone's rollup](../assets/images/scaling-chains/thought-catalog-UoXLndT32Hg-unsplash.jpg "Not everyone's rollup")
 > Photo by Thought Catalog on Unsplash
 
 Rollups and side-chains are 2 different types of solutions to scale up existing L1s, i.e. increase their TPS capacity. In
@@ -112,6 +112,7 @@ are [separate blockchains][5], with their own security and consensus mechanism, 
 the side-chain are processed and stored off the main L1. What ends up on the L1 is a periodic "summary" of the activity 
 on the side-chain (e.g. netted off transactions). 
 
+<a name="optimistic_zk"></a>
 ### Optimistic vs ZK Rollups
 
 Optimistic Rollups are quite simple in their approach. They assume that all proposed transactions are valid and honest; 
@@ -130,7 +131,7 @@ while remaining private and trustless.
 
 ## dApps and app-chains
 
-![dApp](../assets/images/scaling-chains/dapp.jpg)
+![dApp](../assets/images/scaling-chains/dapp.jpg "dApp")
 > Image from igexsolutions.com
 
 Decentralized applications (dApps) are user-facing applications running on a blockchain.  
@@ -154,9 +155,10 @@ tokenomics,...).
 A good example of the trade-offs in the decision-making is the case of [dYdX][10]. They started out as a dApp on Ethereum,
 but eventually decided to build their own app-chain to improve their scalability and performance.
 
-## <a name="developers"></a>Developers, developers, developers
+<a name="developers"></a>
+## Developers, developers, developers
 
-![Developers, developers!](../assets/images/scaling-chains/developers.gif)
+![Developers, developers!](../assets/images/scaling-chains/developers.gif "Developers, developers!")
 > Image from tenor.co
 
 Key to success for every general purpose chain (L1 or L2) is the developer community and the developer experience.  
@@ -196,7 +198,7 @@ be top-of-mind.
 
 # <a name="setting_the_stage"></a>Setting the stage
 
-![Our stage](../assets/images/scaling-chains/annie-spratt-zqEFEWeuXK4-unsplash.jpg)
+![Our stage](../assets/images/scaling-chains/annie-spratt-zqEFEWeuXK4-unsplash.jpg "Our stage")
 > Photo by Annie Spratt on Unsplash
 
 With our basics out of the way, let's set the stage for where we are and what we want to achieve.  
@@ -214,7 +216,7 @@ Let's work backwards from this statement.
 The Internet gives us a good prior example of exponential technology adoption. The number of websites has been on an 
 exponential trajectory for the last 20 years. From 0 at the beginning of the '90s to almost 2 billion today.  
 
-![Website growth](../assets/images/scaling-chains/websites.png)
+![Website number growth](../assets/images/scaling-chains/websites.png "Website number growth")
 > Chart from Statista
 
 Web2 websites (and online systems in general) are a great parallel to web3 dApps and chains. They are both collections of 
@@ -262,11 +264,13 @@ not be jeopardised. Any decision has to consider not only the upside opportunity
 
 Based on the discussion so far, we have some realistic requirements. Let's list them briefly, in semi-random order.
 
-<a name="req_1"></a>1. **Tech stack**
+<a name="req_1"></a>
+1. **Tech stack**
 Our chain is built using the Cosmos SDK, so there is existing know-how in the team and the ecosystem.  
 Any decision on changing the tech stack should not be taken lightly. 
 
-<a name="req_2"></a>2. **North star metric**  
+<a name="req_2"></a>
+2. **North star metric**  
 We need a quantifiable target to act as a "North star" measure of scalability progress. This is how both internal teams 
 as well as the community will unambiguously assess the success of the effort.  
 
@@ -278,19 +282,22 @@ A corollary of aiming for a specific throughput, is that the team would need to 
 system**. This will allow them to test candidate technical solutions and to gage early if they would bring the system
 closer to the goal.
 
-<a name="req_3"></a>3. **Stability >> bleeding edge**  
+<a name="req_3"></a>
+3. **Stability >> bleeding edge**  
 This is a general *guiding principle*, a value.  
 As discussed in [Starting point](#starting_point) the chain’s moat is the existing user base. In that regard, the 
 technical team has to seriously consider the potential downside of any risky or untested technical solution. Any 
 technological improvements will not be done for technology's sake; instead technology is the tool to maintain and expand 
 the existing user base.  
 
-<a name="req_4"></a>4. **Based on “serious” open source**  
+<a name="req_4"></a>
+4. **Based on “serious” open source**  
 This is a restriction, which comes as a natural corollary of the above principle. If a chain's (or any product/service for 
 that matter), [USP][20] is not cutting-edge technology, then the chain is an *integrator rather than an inventor*.<sup>[7](#footnote_7)</sup>
 Any technical enhancements and new building blocks should map to well-maintained open-source repositories.
 
-<a name="req_5"></a>5. **EVM compatibility**  
+<a name="req_5"></a>
+5. **EVM compatibility**  
 This is a [1-way door decision][22]. In the Cosmos ecosystem there is the optionality of integrating different 
 smart contract VMs (EVM, CosmWasm, Gno.land). In practice this is a decision which has far-reaching consequences in the 
 execution and future adoption by developers.  
@@ -299,17 +306,19 @@ through sheer community size and tooling availability.
 Therefore, XYZ chain will find it hard to economically compete for developer attention<sup>[8](#footnote_8)</sup> if it 
 does not continue to offer EVM compatibility. 
 
-<a name="req_6"></a>6. **Bridges to other chains**  
+<a name="req_6"></a>
+6. **Bridges to other chains**  
 This is another thing to keep in mind: interoperability across chains increases the reach and utility of an L1. On the 
 other hand [cross-chain bridges][25] remain one of the biggest [sources of vulnerabilities][27] in the blockchain world. This 
 further restricts the technology choices in the current landscape. The Cosmos SDK offers secure, native bridging via 
 [IBC][24] out-of-the-box. Reaching to other blockchain ecosystems requires either technology-enabled native bridging, or 
 maintaining compatibility with existing, battle-tested bridges. 
 
-![Map of Zones](../assets/images/scaling-chains/mapofzones.png)  
+![Map of Zones](../assets/images/scaling-chains/mapofzones.png "Map of Zones")  
 > IBC-enabled chain interactions, by [mapofzones.com][29]
 
-<a name="req_7"></a>7. **Compound XYZ token utility**  
+<a name="req_7"></a>
+7. **Compound XYZ token utility**  
 This is another guiding principle. Almost all L1s (XYZ included) start their existence with a [genesis token distribution][23],
 part of which goes to the team's treasury. This works towards aligning incentives for long-term success.  
 In an existing and developed ecosystem, like XYZ, there is a strategic intent to not "cannibalize" the existing token, e.g. 
@@ -318,7 +327,8 @@ This works in favour of everyone involved: tokens in treasury, RoI for partners�
 participants.  
 In brief, any solution must avoid any dependency on external tokens or dilution of utility of the existing XYZ token.
 
-<a name="req_8"></a>8. **Single, composable chain**  
+<a name="req_8"></a>
+8. **Single, composable chain**  
 Last but not least, XYZ chain should remain a composable chain. This is another 1-way door decision. A chain can increase 
 its throughput via side-chains or channels (e.g. [Lightning][26] for Bitcoin). These channels are extremely effective 
 when the chain is single-purpose (like value transfer for Bitcoin). In general purpoise chains introducing use-case-specific 
@@ -328,7 +338,7 @@ participants decide correctly which one to join?
 
 # Moving forward
 
-![The world](../assets/images/scaling-chains/nasa-vhSz50AaFAs-unsplash.jpg)
+![The world](../assets/images/scaling-chains/nasa-vhSz50AaFAs-unsplash.jpg "The world")
 > Photo by NASA on Unsplash
 
 Now that we have established some guiding principles and requirements, we can start to look at the options available 
@@ -468,78 +478,145 @@ Cosmos implementation to begin with. However, there are a couple of risks to con
 
 ## Option 3 - Rollups
 
-**ZK vs Optimistic**
+The third option is to use a rollup technology.  
 
-- Picking between the 2 rollup technologies is a major 1-way door, **which the blog post does not cross** (possibly intentionally).
-- Optimistic rollups are simpler to implement, have lower computation costs and, hence, have the **potential for higher TPS throughput.** Due to their nature, they impose a multi-day “exit settlement” time window (when moving out of the rollup, to allow for externally submitted fraud proof).
-- zk-Rollups are much harder to implement, requiring much more computation and an upfront trust structure (provers). They offer immediate settlement.
-- [Prio 7] implies a seamless user experience w.r.t. bridging. In addition, one of the main benefits of the Cosmos ecosystem is instant finality. Introducing optimistic rollups would “break” these promises.
-  Therefore, **zk-Rollups appears as the best option to pursue**.
+But first there are a couple of important decisions.
 
-**EVM compatibility**
+### ZK vs Optimistic
 
-- [Prio 3] and [Prio 4] make it clear that chain v2 must offer a general computation engine. So offering a VM is almost without question.
-- zk-EVM approaches are split in 2 categories
-  - 1st generation bespoke VMs (e.g. [Cairo](https://starkware.co/cairo/))
-  - An emerging cluster of 2nd generation zk-EVMs ([zkSync](https://docs.zksync.io/zkevm/#general), [Polygon](https://github.com/0xpolygonhermez), [Scroll](https://scroll.io/))
-- From the chain point-of-view, [Prio 4] points not only to EVM compatibility, but **cross-stack developer tooling compatibility and re-use**. I.e. giving dApps the ability to port from chain v1 to v2 with minimal-to-no changes.
-  This makes a **2nd generation zk-EVM a better choice**, with 3 different option to explore.
-- From the information available at the time of writing
-  - zkSync: Gated mainnet. Effectively closed source. Critical parts of the code (Prover) are not available, while others do not build intentionally.
-  - Scroll: Pre-alpha testnet. Open source with zero documentation. Seems to be at least 1y behind zkSync in terms of maturity.
-  - Polygon: Testnet. The best documented of the 3, at 97% EVM opcode coverage. Seems the most promising option.
-- A future strategic opportunity with zk-Rollups is through **standardization of circuit/prover logic across ecosystems**. This would lead to (almost) native bridging of assets between compatible zk-Rollups ([Prio 7]). This is something worth exploring by chain through partnerships.
-- Risks
-  - Maybe none of the 3 options are ready for use within chain’ timeframe. E.g. zkSync remains closed source for an unknown period of time, Polygon has bugs, etc.
-    This could be a real threat. A possible mitigation would be by joining forces with one of the above teams to assist.
-  - The chosen prover circuit may not be performant, requiring specialized hardware and leading to validator centralisation[[5]]. This is an area that requires active R&D and leveraging partnerships.
+This is a major one-way door decision.  
+The two technologies offer similar benefits, but are not interchangeable. We discussed their characteristics in the 
+Introduction section [ZK vs Optimistic](#optimistic_zk).
+
+From the XYZ chain's PoV both appear to offer benefits.  
+* Optimistic rollups offer simple implementation, aligning with [Priority 3](#req_3) of prioritising stability.
+* On the other hand, optimistic rollups's securirty is effectively a product of social consensus and participant 
+  incentives. If, for some reason, fraud proofs are not submitted, the whole security model falls apart.   
+* ZK rollups' security is firmly grounded in mathematics. This makes it a more reliable long-term option. The security 
+  is harder to implement, but not open to disputes. This aligns well with [Priority 3](#req_3)in the long term.
+* Speaking of longer term, one additional point to consider is the future opportunity of **standardization of 
+  circuit/prover logic across ecosystems**. This would lead to (almost) native bridging of assets between compatible 
+  ZK Rollups ([Priority 6](#req_6)). Though not a Day 1 opportunity, this is something worth exploring by the XYZ team 
+  through technology partnerships.
+
+Weighing the choices and their trade-offs, it would make sense for XYZ chain to **pursue ZK Rollups**.
+
+### EVM compatibility
+
+The second decision is whether to use an EVM-compatible rollup or not.  
+[Requirement 5](#req_5) is unambiguous on this: yes.  
+
+Which, given the discussion on ZK rollups we just had, brings us to the next question: can we have an EVM-compatible ZK
+rollup? The answer is also yes.
+
+zk-VM implementations are split in 2 categories:  
+* 1st generation VMs. These ones employ a bespoke language to support the underlying ZK execution semantics (e.g. 
+  Starkware's [Cairo][57])
+* An emerging cluster of 2nd generation VMs. These offer full EVM compatibility out-of-the-box.  
+  Examples here are [zkSync][58], [Polygon Hermez][59] and [Scroll][60]. 
  
+From the XYZ chain's PoV, [Priority 5](#req_5) points not only to EVM compatibility, but **cross-stack developer tooling 
+compatibility and re-use**. I.e. giving dApps the ability to port across chains with minimal-to-no changes.  
+This makes a **2nd generation zk-EVM a better choice**, with 3 different option to explore.
+
+At the time of writing this article, the state of the 3 options is as follows.
+* zkSync  
+  Currently at mainnet. Critical parts of the code (e.g. Prover) are not available, while others do not build intentionally. The project Effectively closed source. Critical parts of the code (Prover) are not available, while others do not build intentionally.
+  This makes the project effectively closed source, based on its strategy<sup>[14](#footnote_14)</sup>.
+* Scroll  
+  At pre-alpha testnet. Fully open source, but with zero documentation at the time of writing. From a quick glance it 
+  appears to be at least 1 year behind zkSync in terms of code maturity.
+* Polygon Hermez  
+  Currently at testnet. This EVM is the best documented of the 3, with almost 100% EVM opcode coverage and all code 
+  open-source.  
+  It seems like the most promising option at of the 3.
+
+### Rollups and the XYZ chain
+
+The way forward for the implementation of rollups in XYZ chain becomes a bit clearer.  
+The team would need to deploy a separate L2, secured by the existing XYZ chain. Let's call this XYZ v2.  
+XYZ v2 would offer ZK rollups along with full EVM compatibility. This would allow existing XYZ chain dApps to be ported 
+over with minimal changes. 
+
+It is also important to highlight a future strategic opportunity with ZK Rollups.  
+A **standardization of circuit/prover logic across ecosystems** would lead to (almost) native bridging of assets between 
+compatible zk-Rollups, regardless which chain ecosystem they are implemented in. This would fit nicely with [Priority 6](#req_6). 
+This is something worth exploring by thge XYZ chain through cross-chain technology partnerships.
+
+Like all choices, this does come with its own risks.  
+* Maybe none of the 3 ZK EVM options are ready for use within XYZ chain’s timeframe.  
+  E.g. zkSync remains closed source for an unknown period of time, Polygon has bugs, etc. This could be a real threat to
+  the delivery of this milestone. A possible mitigation would be to join forces with one of the above teams to assist.
+* Not all ZK circuits are created the same; the chosen prover circuit may not be performant enough.  
+  For example, it may require specialized hardware to run (see [footnote 14](#footnote_14). This could lead to validator 
+  centralisation. This is an area that requires active R&D and leveraging partnerships in order to derisk.
+
 # A path forward
 
-![Building blocks of an imaginary chain](../assets/images/scaling-chains/XYZ_End_State-Components.drawio.png)
-> Building blocks of our imaginary chain
+With all the pieces in place, the last thing to do is to put them together in a coherent plan.  
+In a key piece of infrastructure like a chain, having a clear plan with milestones and a target end state is key to 
+building up trust in the stakeholder community.
 
-**Phase 1.1**
+![Building blocks of the XYZ chain](../assets/images/scaling-chains/XYZ_End_State-Components.drawio.png "Building blocks of the XYZ chain")
+> Expansion phases and building blocks of the XYZ chain
 
-This phase includes all the vertical improvements described in Phase 1 of the blog post.
+This diagram attempts to do 3 things:  
+* depict the new building blocks of the XYZ chain that we just discussed and how they correlate to each other, 
+* group them together in a rough plan with delivery milestones, and
+* highlight how they would interact with external pieces of infrastructure.
 
-- Node RPC layer
-- Internal optimizations (ABCI++, mempool, decoupling of storage,…)
+In terms of sequencing and timing, the differnt phases can be sequential or have any amount of timing overlap. This 
+depends entirely on the capacity of the XYZ team and the availability/maturity of external components. 
 
-*It is mentioned for completeness and will not be analysed further as out-of-scope.*
+**Phase 1**  
+Here we have grouped together all the improvements described in the section [Low-hanging fruit](#low_hanging_fruit).  
+These are the internal optimisations to the existing codebase of XYZ.  
+The chain will continue maintaining support with other L1s via IBC, [Gravity Bridge][62] and, for Polkadot chains, 
+[XCVM][63]. 
 
-**Phase 1.2**
+**Phase 2**  
+Here the XYZ team can tackle the Parallelized EVM work. Once completed, this would deliver an additional performance 
+boost to the chain's throughput. 
 
-Parallelized EVM
-This is decoupled from chain v2, as an explicit improvement to the v1 chain.
+**Phase 3**  
+This phase delivers the Data Availability layer (DAC) as a separate building block.  
+It offers an SDK for its various modes (centralised validium, fully staked DAC). The SDK, delivering the simplest forms
+of storage first, would allow dApps on XYZ to start developing straight away (for example, gaming requiring 
+semi-centralised rather than independently attested storage).  
+Depending on the uptake, this will also help improve the XYZ chain throughput, nearing towards the North Star 
+performance goal.
 
-**Phase 2.1**
+**Phase 4**  
+This will deliver the zk-EVM functionality as a separate L2 on top of XYZ (after evaluating all alternatives).  
+Depending on delivery timing and community interest, the new L2 chain may also utilize the DAC SDK & layer for storage.
 
-This phase delivers the Data Availability layer (DAC) as a separate building block.
-
-It offers an SDK for its various modes (centralised validium, fully staked DAC), allowing dApps on v1 to start developing straight away (e.g. gaming with semi-centralised storage).
-Depending on the uptake, this will help take load off the v1 chain, nearing towards the North Star transaction goal.
-
-**Phase 2.2**
-
-This delivers chain v2 as a zk-EVM chain, after evaluating all alternatives.
-
-The chain utilizes the existing DAC SDK & layer for storage.
-
-**Other items**
-
-*Out of scope, mentioned for completeness.*
-
-- Interfaces (wallet, SDKs, dev tooling)
-  Their delivery cycle and feature set is aligned to the delivery phases of chain.
-- ZK cross-chain bridge
-  Further out in the future. Once zk-EVMs proliferate, this will be the next area to get R&D focus.
+**Other items**  
+* Tooling  
+  The delivery of the above phases is not in isolation. Instead, it is accompanied by updates to a number of tools and 
+  interfaces: wallets, SDKs, dev tooling and documentation. Their delivery cycle and feature set is aligned to the 
+  delivery phases of the XYZ chain.
+* ZK cross-chain bridge  
+  This is a "later" thing, to be delivered sometime in the future. Once zk-EVMs and ZK chains in general proliferate, 
+  this will be the next area to get R&D focus. Compatibility at the prover & circuit level will lead to native bridging 
+  of assets. 
 
 # Parting thought
 
-![Scaling up](../assets/images/scaling-chains/mar-bocatcat-vi3fXw_6ySs-unsplash.jpg)
+![Scaling up](../assets/images/scaling-chains/mar-bocatcat-vi3fXw_6ySs-unsplash.jpg "Scaling up")
 > Photo by Mar Bocatcat on Unsplash
 
+And that was it! 🎉🎉
+
+We covered a LOT of ground in this article.  
+For someone new to the space, it may have been a bit overwhelming or even complete alien language.  
+The point was not to understand every little detail. Instead it was to get a sense of the different options available 
+in the little corner called Cosmos ecosystem.  
+
+But if you are going to walk away with a single take-away it should be this: blockchain not only has non-stop innovation.
+It also has its own tradeoffs and optimisations based on external factors.  
+Just as with any discipline of engineering.
+
+Until next time, keep building!
 
 
 # Footnotes
@@ -585,6 +662,8 @@ The chain utilizes the existing DAC SDK & layer for storage.
     maximum speed, to [Data Availability Committees][45] (stakes & unstaked) to full on-chain ZK rollups.
     ![Chain storage options](../assets/images/scaling-chains/storage-options.png)
     > Image from [Celestia][46]
+14. <a name="footnote_14"></a>According to [zkSync’s CPO][61], achieving performance on generalized hardware is their “technical 
+    moat” and the most closely guarded part of their codebase for the foreseeable future.
 
 
   [1]: https://en.wikipedia.org/wiki/OSI_model
@@ -642,3 +721,11 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [53]: https://layerzero.network/
   [54]: https://uniswap.org/blog/uniswap-optimism-alpha
   [55]: https://decentraland.org/blog/announcements/polygon-mana/
+  [56]: https://ethereum.org/en/developers/docs/scaling/optimistic-rollups/#what-is-an-optimistic-rollup
+  [57]: https://starkware.co/cairo/
+  [58]: https://docs.zksync.io/zkevm/#general
+  [59]: https://github.com/0xpolygonhermez
+  [60]: https://scroll.io/
+  [61]: https://podcasts.apple.com/us/podcast/the-zkevm-is-here-zksyncs-steve-newcomb/id1499409058?i=1000580884859
+  [62]: https://www.gravitybridge.net/
+  [63]: https://www.composable.finance/about
