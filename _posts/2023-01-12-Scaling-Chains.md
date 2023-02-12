@@ -14,19 +14,19 @@ modularity can scale a L1 to the next level.
 
 # Introduction 
 
-Let's start with a truism: there is no black-and-white approach to scaling up a blockchain and increasing its 
-transactions per second (TPS).  
+Let's start with a truism.  
+There is no black-and-white approach to scaling up a blockchain and increasing its throughput (TPS).  
 Just as with any software system, there is a series of trade-offs to be made, based on restrictions and available tools
-and technologies. 
-Wearing an architect / senior engineer hat on requires ??? 
+and technologies. Wearing an architect / senior engineer's hat on requires us to be aware of both the restrictions as well the technical 
+landscape around us. This will allow us to make informed decisions in the face of uncertainty.  
 
 In this post, I will 
 * lay out some "realistic" requirements of a fictional chain, 
 * examine the current technological landscape, and
-* present an example approach on scaling the chain, while discussing the thought process. 
+* present an example approach of scaling the chain, while discussing the thought process. 
 
 > For the readers without a deep understanding of the blockchain space, I will start by quickly introducing some basic 
-> concepts: L1 & L2s, rollups, side-chains, the importance of EVM,etc  
+> concepts: L1 & L2s, rollups, side-chains, the importance of EVM, etc  
 > If you feel you are well-versed in blockchain concepts, you can just skip to section [*Setting the stage*](#setting_the_stage).
 
 ## L3, L2, L1, L0... Lift-off!
@@ -39,11 +39,11 @@ The most common way is by assessing at which point of the "stack" they operate, 
 use the [Open Systems Interconnection (OSI) model][1] as a reference.
 
 ![OSI model mapping ](../assets/images/scaling-chains/osi_mapping.drawio.png)
-> Mapping between the OSI model and the blockchain layers
+> An attempt to map between the OSI model and the blockchain layers
 
 ### L1
 It all started with the 1st (Bitcoin et al) and 2nd generations (Ethereum et al) of blockchains. Whether a single purpose 
-chain (e.g. Bitcoin, allowing transfer of value) or a multi-purpose chain (e.g. Ethereum, allowing arbitrary computations), 
+chain (e.g. Bitcoin, allowing transfer of value) or a general computation chain (e.g. Ethereum, allowing arbitrary computations), 
 they are all considered L1 chains. Their remit covers the whole stack, from peer-to-peer networking to the top-most 
 user-facing application layer. This category also includes 3rd generation chains (e.g. Solana, Binanche Smart Chain, 
 Evmos, Aptos,...); despite their differences, they all have the same top-to-bottom "footprint".
@@ -56,30 +56,31 @@ One of the options was to move the expensive computation off-chain. This led to 
 * use the L1 chain as a "source of truth" (e.g. for storing batches of transactions), and
 * are interoperable with the L1 chain.
  
-Different L2 solutions (e.g. Optimism, Polygon, Starkware) have different technical choices which lead to different 
+Different L2 solutions (e.g. [Optimism][48], [Polygon][49], [Starkware][50]) have different technical choices which lead to different 
 trade-offs in terms of security or decentralization. The end result is one: increase the overall TPS of the underlying 
 L1 chain by moving the expensive computation away from it.  
 
 ### L0
 L2s were a solution to the scalability problem, taking the existing L1 chains "for granted"; it is there, it works, let's 
-make it better.   
+"make it great again".   
 
 L0s are a first-principles approach to the scalability question. They offer the infrastructure and building blocks that 
 comprise a blockchain (p2p networking, transaction finality and consensus, storage,...) to allow them to scale. A L0 
 is effectively a chain-of-chains; not meant to be used for implementation of user-facing applications, but instead as 
 the foundation for other blockchains.
 
-Through different technology, architecture choices and trade-offs in this category we have Polkadot, Cosmos, LayerZero,
-Celestia,...
+Through different technology, architecture choices and trade-offs in this category we have [Polkadot][51], [Cosmos][52], 
+[LayerZero][53], [Celestia][46],...
 
 ### L3
 Now that we have described the other layers, it becomes a bit clearer what an L3 is.  
-L3 is a user-facing application (smart contract dApp) with its own token that is built on top of an L2. There are plenty of examples 
-here, like Uniswap deployed on Optimism, Decentraland on Polygon, etc.   
+L3 is a user-facing application (smart contract dApp) with its own token that is built on top of an L2. There are plenty 
+of examples here, like Uniswap [deployed on Optimism][54], Decentraland [on Polygon][55], etc.   
 
-We have yet to see a L3 blockchain built on top of an L2. This is because there are no use cases yet which would   
+To the best of my knowledge, we have yet to see a L3 blockchain built on top of an L2. This is because there are no use 
+cases yet which would   
 * benefit from the increased TPS of the L2, and
-* require features that are not available in a smart contract environment (like network and DB access).
+* require features that are not available in a sandboxed smart contract environment (like network and DB access).
 
 However, with the increasing adoption of web3, it is only a matter of time that we see an L3 chain built on top of an L2's
 SDK. 
@@ -181,16 +182,16 @@ the development effort.
 
 The result is that there is a huge number of dApps built on EVM on its blockchain compared to any other platform.  
 According to [DappRadar][13] there are almost 4,000 EVM dApps built on Ethereum. Combined with other EVM-compatible 
-chains like [BSC][14], [chain][15] etc the number climbs closer to 10,000. 
-For contrast, competing non-EVM-based platforms like [EOS][16] and [Tron][17] have 1-to-2 order of magnitude less 
+chains like [BSC][14], [Cronos][15] etc the number climbs closer to 10,000. 
+For contrast, competing non-EVM-based platforms like [EOS][16] and [Tron][17] have 1-to-2 orders of magnitude less 
 deployed dApps.
 
-That is a huge hurdle for any new development platform with its own language to overcome, in terms of tolling quality, 
+That is a huge hurdle for any new development platform with its own language to overcome, in terms of tooling quality, 
 community support and available talent pool.
 As an anecdote, AI coding assistants ([Github Copilot][16], [ChatGPT][17]) offer incomaparably better support with 
 Solidity than any other smart contract language.<sup>[4](#footnote_4)</sup>
 
-So in conclusion, easier developer adoption and a better upfront developer experience mean that EVM compatibility should 
+So, in conclusion, easier developer adoption and a better upfront developer experience mean that EVM compatibility should 
 be top-of-mind.
 
 # <a name="setting_the_stage"></a>Setting the stage
@@ -206,16 +207,17 @@ Let's time-travel to the future and start with the...
 
 ## Vision
 
-Here is a bold-but-not-so-much statement.  
+Here is a very bold assertion.  
 > In a few years there will be millions of dApps, tokens and L3 chains, tokenizing and representing any asset imaginable.  
 
 Let's work backwards from this statement.  
 The Internet gives us a good prior example of exponential technology adoption. The number of websites has been on an 
 exponential trajectory for the last 20 years. From 0 at the beginning of the '90s to almost 2 billion today.  
+
 ![Website growth](../assets/images/scaling-chains/websites.png)
 > Chart from Statista
 
-Websites (and online systems in general) are a great parallel to web3 dApps and chains. They are both collections of 
+Web2 websites (and online systems in general) are a great parallel to web3 dApps and chains. They are both collections of 
 data and logic, with progressively higher orders of user engagement and utility.
 
 The crypto space is clearly following the Internet adoption curve, no matter [which metric][19] we pick. This has two 
@@ -225,10 +227,10 @@ important consequences for aspiring general-purpose L1s.
 That is an obvious one: L1s must be able to support exponentially growing volumes of transactions.
 
 * **Flexibility**  
-Just like websites range from simple Wordpress sites to gigantic banking and e-commerce systems, future dApps and L3s will come 
-with a continuum of needs  
-- from maximum-trust-with-little-on-chain (Wordpress-like) to minimum-trust-with-everything-on-chain (banking-like), and
-- from few large Bitcoin-like “transactions” to millions of gaming-like “interactions”
+Just like websites range from simple Wordpress sites to gigantic banking and e-commerce systems, future dApps and L3s 
+will come with a continuum of needs  
+  * from maximum-3rd-party-trust-with-little-on-chain (Wordpress-like) to minimum-trust-with-everything-on-chain (banking-like), and
+  * from few large Bitcoin-like “transactions” to millions of gaming-like “micro-interactions”
 
 L1s that aspire to take market share should have the performance, building blocks and tooling to enable this future for 
 their users and developers.
@@ -239,7 +241,7 @@ Now that we have the destination, let's define our starting point and set some r
 
 ### <a name="starting_point"></a>Starting point 
 
-> Throughout this article I will call both our imaginary chain and its token XYZ. 
+> I will call both our imaginary chain and its token XYZ. 
 
 The XYZ chain is a well-established player in the wider blockchain ecosystem.<a name="footnote_5"></a>  
 
@@ -247,10 +249,10 @@ It already has a few million users (active addresses) on it. Almost the entirety
 successful single app, to which they are very loyal.<sup>[6](#footnote_6)</sup> This gives it a good moat compared to 
 the competition and a ready user community with which to entice 3rd party developers.  
 
-XYZ is implemented using the Cosmos SDK and allows EVM-compatible smart contract  development. It  already has a 
-number of dApps deployed on it. It has a reputation for stability, but it ranks lower than other L1s in number of dApps
+XYZ is implemented using the Cosmos SDK and allows EVM-compatible smart contract  development. It already has a 
+number of dApps deployed on it and has a reputation for stability. However, it ranks lower than other L1s in number of dApps
 deployed.  
-It has a high market cap, say top 50 or top 20; in other words it is not insignificant. However it's DeFi ecosystem is 
+It has a high market cap, say top 50 or top 20; in other words it is not insignificant. On the other hand, its DeFi ecosystem is 
 not as developed as other chains: the Total Value Locked (TVL) is low compared to other chains.
 
 In summary, XYZ's team have "something" in their hands; they do not start from zero. There is an existing user base, which should 
@@ -295,14 +297,15 @@ execution and future adoption by developers.
 As discussed in the [Introduction](#developers), the EVM/Solidity ecosystem has the **best developer experience** by far,
 through sheer community size and tooling availability.  
 Therefore, XYZ chain will find it hard to economically compete for developer attention<sup>[8](#footnote_8)</sup> if it 
-does not offer EVM compatibility. 
+does not continue to offer EVM compatibility. 
 
 <a name="req_6"></a>6. **Bridges to other chains**  
 This is another thing to keep in mind: interoperability across chains increases the reach and utility of an L1. On the 
 other hand [cross-chain bridges][25] remain one of the biggest [sources of vulnerabilities][27] in the blockchain world. This 
 further restricts the technology choices in the current landscape. The Cosmos SDK offers secure, native bridging via 
 [IBC][24] out-of-the-box. Reaching to other blockchain ecosystems requires either technology-enabled native bridging, or 
-maintaining compatibility with existing, battle-tested bridges.  
+maintaining compatibility with existing, battle-tested bridges. 
+
 ![Map of Zones](../assets/images/scaling-chains/mapofzones.png)  
 > IBC-enabled chain interactions, by [mapofzones.com][29]
 
@@ -332,15 +335,18 @@ Now that we have established some guiding principles and requirements, we can st
 to us. 
 Let's start with some... 
 
-<a name="low_hanging_fruit"></a>## Low-hanging fruit
+<a name="low_hanging_fruit"></a>
+## Low-hanging fruit
 
-**Cosmos SDK & Tendermint improvements**  
+### Cosmos SDK & Tendermint improvements
+
 Upstream improvements is part-and-parcel of a vibrant ecosystem (e.g. for [Tendermint Core][30]).  
 These range from peer-to-peer networking improvements, to upgrades to the [ABCI interface][31] and [mempool prioritisation 
 refactoring][32]. 
 Keeping up with these is a must, bringing some performance improvements to the chain.
 
-**Block adjustments**  
+### Block adjustments
+
 This is another place to look.  
 * Increasing the [block size][28] ("how many transactions can we fit") 
 * How frequently blocks are minted at the consensus layer, and 
@@ -355,7 +361,8 @@ percentage, not by a factor of 2-3-10x.
 capacity and connectivity. There is a cut-off point where it might become unfeasible to run a validator node, if 
 the block adjustment are out of whack.
 
-**Storage optimization** 
+### Storage logic optimization 
+
 A large part of validator node resources is consumed by managing and storing the chain's state in the local database.  
 In the Cosmos SDK, all building blocks of logic (a.k.a modules) store their data in the [internal key-value store][33]. 
 Some modules will have a disproportionate load on the node and will become critical (e.g. the EVM module, an order book 
@@ -363,8 +370,9 @@ module in a DEX chain, etc).
 Focusing on optimising the storage of these modules (e.g. optimising data structures, decoupling from the default 
 storage) can potentially bring performance improvements.   
 
-With quick wins out of the way, we need to think of potentials for step change; orders of magnitude improvements. Let's 
-look at some more ambitious options.
+
+With quick wins out of the way, we need to think of potentials for step change; orders of magnitude improvements.  
+Let's look at some more ambitious options.
 
 ## Option 1 - Parallelisation of execution
 
@@ -398,6 +406,7 @@ From an implementation perspective, a core piece of work would
 be to understand the impact of transactions on the state graph of the EVM and identify which ones can be safely executed.
 Transaction classification can range from explicit and standards-based (e.g. see [EIP-2930][39]) to implicit and esoteric 
 (e.g. bytecode heuristics<sup>[12](#footnote_12)</sup>).  
+
 In terms of options there are a couple.  
 Ethereum adoption of EIP-2930 will "force" the corresponding work on the Cosmos EVM side to maintain compatibility. This 
 would provide the needed open-source support, but it is still unknown when it would actually happen. 
@@ -419,24 +428,43 @@ optimisation journey.
 
 As we touched briefly in [Low-hanging fruit](#low_hanging_fruit), the storage element is a major contributor to resource 
 comsumption. In other words, a performance drag.  
-Increasing blockchain speed by offloading block storage to an external component or service is a subject studied in length, 
-especially by the [Ethereum community][43].
-- Though mostly referenced in the context of a zk-rollup, a data availability layer can accelerate any chain connected to it. This is true for chain v1 and v2. chain v1 is already a general purpose chain, appealing to high-throughput apps, like gaming.
-- dApp storage needs are **not one-size-fits all; they fall along a ladder of increasing security**[[4]]. In the ideal end state
-    - different dApps would have access to different storage options, depending on their needs, and
-    - access to the data availability layer is abstracted behind an SDK/API.
-- For these reasons it makes sense to **investigate storage availability as a separate building block**, not exclusively tied to the chain v2 chain’s roadmap.
-- From a code PoV a Cosmos-compatible reference implementation already exists ([Celestia](https://celestia.org/)) and is following a modular architecture approach. Celestia is built as a L0 and will eventually have its own token (against [Prio 5]).
-  The chain team can **use a Celestia fork as a PoC starting point** and investigate
-    - the extent of out-of-the-box reusability vs custom development (i.e. SDK module re-use).
-    - the best **tokenomics model** for the staked DAC option (new DAC token vs re-use of XYZ vs PoA)
-- Risks
-    - The implementation approach of a DAC does not align with the interests of chain’ partner validators (e.g. incentives, infrastructure choices,…).
-      This can be mitigated by involving partners in the early stages of the high-level design and tokenomics.
-    - The interface and functional choices of the data availability module/SDK is not fit-for-purpose for the needs of the community. This can be mitigated by
-        - circulating the design ahead of time for comments, and
-        - the chain team creates some realistic dApps to verify the usability of the data layer.
+Increasing blockchain speed by offloading block storage to an external component or service is a subject studied at length, 
+especially by the [Ethereum community][43]. Though mostly referenced in the context of a ZK rollup (to be discussed 
+later on), a data availability layer can accelerate any chain connected to it. Our XYZ chain is already a general 
+computation chain, appealing to high-throughput and possibly high data volume apps, like gaming. 
 
+It is worth pausing to think that dApp storage needs are **not one-size-fits-all**. They fall along a "ladder" of 
+increasing complexity and security<sup>[13](#footnote_13)</sup>. In the ideal end state, in our XYZ chain  
+* different dApps will have access to different storage options, depending on their needs, and
+* access to the data availability layer is abstracted behind an SDK.
+
+For these reasons it makes sense to investigate storage availability as a **separate building block**, rather than 
+making it a "blocking" requirement in the chain’s roadmap. Let's dig in a little deeper.  
+From a code PoV there is an actively maintained Cosmos-compatible reference implementation of a base storage layer: 
+[Celestia][46]. Celestia is built from the ground up as a L0 and will eventually have its own token; using it outright 
+would be against [Priority 7](#req_7). On the other hand, Celestia's code itself is built in a modular way, courtesy 
+of Cosmos SDK and Go.  
+This means that the XYZ chain team can **use a Celestia fork as a PoC starting point** and investigate  
+* the extent of out-of-the-box reusability vs custom development with regards to Cosmos SDK modules,
+* the impact of the data availability layer on the chain's performance,
+* the feasibility and best way to introduce various data availability models (Validium, DAC,...) via a common interface, and  
+* (in the case of the DAC option) the best **tokenomics model**, if applicable. I.e. should DAC be secured via 
+  simple [proof-of-authority][47], re-use the existing XYZ token or introduce a separate DAC.
+
+The XYZ team would not be considering this option from a blank sheet of paper; there is plenty of research and a working 
+Cosmos implementation to begin with. However, there are a couple of risks to consider in this option, too.   
+* The existing Celestia codebase is hard-to-impossible to incorporate. This would mean starting the development from 
+  scratch, which is against Priorities [3](#req_3) and [4](#req_4). 
+* The chosen implementation approach of a DAC does not align with the interests of XYZ’s partner validators (e.g. 
+  incentives, infrastructure choices,…). In other words, they would not want to support it. This can be mitigated by 
+  involving the community from the early stages of the high-level DAC design and any tokenomics decision.
+* The interface and functional choices of the data availability module/SDK is not fit-for-purpose for the needs of the 
+  community. Like with any product, there will be a fair amount of assumptions baked in (e.g. will there be a lot of 
+  gaming apps? If yes, what will their on-chain usage profile be?) The long lead time of infrastructure products may not 
+  agree with the fast-shifting pace of the blockchain space. This uncertainty can be mitigated by
+   * circulating the design ahead of time for comments from the community, and
+   * the XYZ chain team creating some realistic dApps (themselves or via a commissioned 3rd party) to verify the 
+     usability of the data layer.
 
 ## Option 3 - Rollups
 
@@ -524,9 +552,10 @@ The chain utilizes the existing DAC SDK & layer for storage.
 3. <a name="footnote_3"></a>Sovereign meaning having their own set of validators, consensus mechanism, token and governance.
 4. <a name="footnote_4"></a>As an experiment, try asking ChatGPT to create a simple smart contract in [any other][18] smart 
    contract language. Chances are on its first attempt it will return a Solidity example.
-5. <a name="footnote_5"></a>It would have been easy to start from a "blank sheet of paper" with a new chain. But this 
-   would have presented no trade-offs. The whole point of this thought exercise is to see how we can reach a technical 
-   "destination" in the face of trade-offs and restrictions.
+5. <a name="footnote_5"></a>It would have been easy to start from a "blank sheet of paper" with a new chain. But it is 
+   rarely realistic to be discussing technology in a vacuum. There is always some context which informs our decisions 
+   and trade-offs. The whole point of this thought exercise is to see how we can reach a technical "destination" in the 
+   face of different restrictions as well as options.
 6. <a name="footnote_6"></a>There are plenty of examples of single "killer" apps acting as on-ramp for users on a chain:
   Stepn for Solana, Sweatcoin on ???, chain for chain (to an extent), etc
 7. <a name="footnote_7"></a>It is worth re-stating here the difference between invention and innovation. Something I 
@@ -545,11 +574,17 @@ The chain utilizes the existing DAC SDK & layer for storage.
    * complex (account-to-contract-to-contract-to…)  
    
    This allows the chain to understand the “impact” of each type of transaction and batch/shard accordingly.
-   ![Zilliqa transaction types](../assets/images/scaling-chains/zilliqa.png)
+   ![Zilliqa transaction types](../assets/images/scaling-chains/zilliqa.png)  
+   > Image from [Zilliqa][34]
 11. <a name="footnote_11"></a>Both chains are [Diem][37] spinoffs and follow similar design approaches.  
     Their internal data model is using optimistic state locking to support parallel transaction execution (versioned 
     data items). This results in “eventually settled” transactions.
 12. <a name="footnote_12"></a>Performing bytecode analysis to discover state graph dependencies (e.g. [F1][40], F2,… opcodes)
+13. <a name="footnote_13"></a>Data storage is a continuum of choices.  
+    At one end we can have a centralised off-chain DB, either fully trusted or providing [Validium-like][44] ZK proofs for 
+    maximum speed, to [Data Availability Committees][45] (stakes & unstaked) to full on-chain ZK rollups.
+    ![Chain storage options](../assets/images/scaling-chains/storage-options.png)
+    > Image from [Celestia][46]
 
 
   [1]: https://en.wikipedia.org/wiki/OSI_model
@@ -566,7 +601,7 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [12]: https://ethereum.org/en/developers/docs/evm/
   [13]: https://dappradar.com/rankings/protocol/ethereum/
   [14]: https://dappradar.com/rankings/protocol/binance-smart-chain/
-  [15]: https://dappradar.com/rankings/protocol/chain
+  [15]: https://dappradar.com/rankings/protocol/cronos
   [16]: https://github.com/features/copilot
   [17]: https://chat.openai.com/
   [18]: https://pontem.network/posts/comparison-of-the-top-10-smart-contract-programming-languages-in-2021
@@ -595,3 +630,15 @@ The chain utilizes the existing DAC SDK & layer for storage.
   [41]: https://www.bnbchain.org/en/blog/new-milestone-the-implementation-of-parallel-evm-2-0/
   [42]: https://aptos.dev/assets/files/Aptos-Whitepaper-47099b4b907b432f81fc0effd34f3b6a.pdf
   [43]: https://ethereum.org/en/developers/docs/data-availability/
+  [44]: https://ethereum.org/en/developers/docs/scaling/validium/
+  [45]: https://ethereum.org/en/developers/docs/scaling/validium/
+  [46]: https://celestia.org/
+  [47]: https://www.geeksforgeeks.org/proof-of-authority-consensus/
+  [48]: https://www.optimism.io/
+  [49]: https://polygon.technology/
+  [50]: https://starkware.co/starknet/
+  [51]: https://polkadot.network/
+  [52]: https://github.com/cosmos/gaia
+  [53]: https://layerzero.network/
+  [54]: https://uniswap.org/blog/uniswap-optimism-alpha
+  [55]: https://decentraland.org/blog/announcements/polygon-mana/
