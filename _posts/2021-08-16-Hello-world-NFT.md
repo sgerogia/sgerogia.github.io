@@ -4,7 +4,7 @@ title: "A 'Hello world' Ethereum NFT with a dApp"
 author: stelios
 tags: [ethereum, smart contract, blockchain]
 categories: [Ethereum, Blockchain, NFT]
-featured: true
+featured: false
 description: "Building on the previous articles, we are demonstrating how to build a simple NFT with an associated dApp."
 image: assets/images/hello-world-nft/note-thanun-X5PYKEEHsDA-unsplash.jpg
 ---
