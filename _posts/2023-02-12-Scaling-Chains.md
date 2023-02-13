@@ -91,8 +91,8 @@ SDK.
 
 ## Rollups and Side-chains: What's the difference?
 
-![Not everyone's rollup](../assets/images/scaling-chains/thought-catalog-UoXLndT32Hg-unsplash.jpg "Not everyone's rollup")
-> Photo by Thought Catalog on Unsplash
+![A different rollup](../assets/images/scaling-chains/luigi-pozzoli-iIS1SIO5_aY-unsplash.jpg "A different rollup")
+> Photo by Luigi Pozzoli on Unsplash
 
 Rollups and side-chains are 2 different types of solutions to scale up existing L1s, i.e. increase their TPS capacity. In
 that regard, they are both L2s.
