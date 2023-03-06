@@ -1,11 +1,11 @@
 ---
 layout: post
-title: 'Starting up: Your first few days as a leader'
+title: 'Starting up: Your first few days'
 author: stelios
-tags: []
-categories: []
+tags: [team creation, architecture, leadership]
+categories: [Leadership, Soft Skills, Engineering]
 featured: true
-description: "."
+description: "A new technical endeavour comes with uncertainty. I will share an approach to help you (the founding technical person) lift the fog of war."
 image: assets/images/starting-up-leader/yuta-koike-ICgqQsDYndc-unsplash.jpg
 ---
 
@@ -28,10 +28,11 @@ We will use this as a fictional scenario to help us focus on the thought process
 ![New mission](../assets/images/starting-up-leader/nathan-dumlao-vxHX2qLltdw-unsplash.jpg "New mission")
 > Photo by Nathan Dumlao on Unsplash
 
-> Note: The business idea serves only as a [McGuffin][5] to help us focus on the thought process
+> **Note**: The business idea in this article serves only as a [McGuffin][5] to help us focus on the thought process.
+> Please do not look for any business value in it.
 
-You are the technical co-founder in an order startup for same-day farm-to-plate-to-door meals.  
-Or in VC-speak: "Uber for farm fresh-cooked food".  
+You are the technical co-founder in an order startup for same-day farm-to-plate-to-door meals. Or in VC-speak: "Uber 
+for farm fresh-cooked food".  
 Your co-founder (CEO) has been working on the business model for the past few months. The market opportunity is just 
 amazing, customers cannot wait to log on and start ordering, investors are forming a disorderly queue to invest, this 
 is the next unicorn etc. 
@@ -41,18 +42,18 @@ Here is the outline of the functionality.
 * Customers browse the website and select their desired produce. 
 * They also select their preferred recipe to cook the produce in (e.g. salad, soup, etc.) in a central kitchen location
 * ...and finally their desired time to deliver the ready meal to their door.
-* On the backend the platform allows freelance drivers to sign up, and 
+* On the backend the platform allows freelance drivers to sign up,  
 * ...pick up the produce from the farmers to deliver to the central kitchen, and
-* ...pick up the cooked orders from the central kitchen and deliver them to the customers.
+* ...deliver the cooked orders from the central kitchen to the customers.
 * The whole system is available as a mobile app and a website.
 
-The founder CEO has added some additional requirements for the platform.  
+After some research, the CEO has added some additional requirements for the platform.  
 * You have secured a kitchen partner to cook the meals.  
-  The partner not only provides the cooking facilities (shadow kitchen), but they also have their own order management 
+  The partner not only provides the cooking facilities ([ghost kitchen][21]), but they also have their own order management 
   and logistics system (check-in ingredients, check-out cooked orders). Your platform should integrate with this system.
 * To save on capex, you should initially be ready to utilise an external [Delivery Management System][4] to manage drivers, 
   routing, etc (e.g. [OnFleet][1], [Shipox][2], [Tookan][3],...).
-* The system should be in public beta within 6 months of seed funding.   
+* Your platform should be in public beta within 6 months of seed funding.   
   There are really-really good business & investor reasons. No point arguing about it, this is a hard requirement.
 
 ## ...and some more context
@@ -90,8 +91,8 @@ If you come from an engineering background, your muscle-memory reaction most lik
 problem and [just write code][6].      
 Not to worry! There will be plenty of time for that in the days and months to come!
 
-But first, it is really worth taking a step back and spending a couple of days to flesh out your approach.  
-This will help you get a better understanding of the task at hand, and the direction you need to take.
+But first, it is really worth taking a step back and spending a couple of days to flesh out your approach. This will 
+help you get a better understanding of the task at hand, and the direction you need to take.
 
 Going from the abstract to the concrete, let's start by defining...
 
@@ -118,15 +119,15 @@ The answers give us a high level understanding of all the different "problems" w
 
 The best way to represent a fuzzy problem is to break it down into a mind map.  
 
-![Mind map of our imaginary system](../assets/images/starting-up-leader/mind-map.png "Mind map of our imaginary system")
+![Mind map of our imaginary system](../assets/images/starting-up-leader/Imaginary-Mindmap.png "Mind map of our imaginary system")
 > Mind map of our imaginary system
 
-If there is a team, this exercise should be done collaboratively, allowing everyone to  
+This exercise should be done collaboratively, allowing everyone on the team to  
 * brain-dump all possible aspects and components of the system...
 * from a logical (or [jobs-to-be-done][7]) PoV, and
 * continue drilling down in each tree branch to extract more fine-grained building blocks. 
 
-This exercise and the back-and-forth of ideas and what-ifs helps uncover a lot of the unknowns and assumptions.  
+The back-and-forth of ideas and what-ifs helps uncover a lot of the unknowns and assumptions.  
 This is also an opportunity to map out dependencies as well as opportunities for re-use ("why don't we use X, instead 
 of building it ourselves?").
 
@@ -137,35 +138,35 @@ With the problem space laid out, it is time to consider...
 ![System design](../assets/images/starting-up-leader/campaign-creators-IKHvOlZFCOg-unsplash.jpg "System design")
 > Photo by Campaign Creators on Unsplash
 
+With the jobs-to-be-done defined we can have a 2nd-order set of questions. The ones below are specific to our imaginary
+system.
+* Can we use SaaS like Airtable or a CMS for dynamic content, rather than build it ourselves?
+* Can we use a PaaS like Heroku or do we need heavier cloud resources?
+* What would the infrastructure footprint look like in the early days?  
+  etc
+
 The breakdown of the problem space is the first step towards top-down [componentization][8]; thinking about our system in
 building blocks which [do one thing well][9].  
 After a couple of iterations over the mindmap, the branches and sub-branches of the mindmap start emerging as our future 
 systems and components. 
 
-With the jobs-to-be-done defined we can have a 2nd-order set of questions. The ones below are specific to our imaginary 
-system.  
-* Can we use SaaS like Airtable or a CMS for dynamic content, rather than build it ourselves?
-* Can we use a PaaS like Heroku or do we need heavier cloud resources?
-* What would the infrastructure footprint look like on Day 1?  
-  etc
-
-This process will eventually lead us to a logical system design like the following.
+This process will eventually lead us to a logical system design, which could look like the following.
 
 ![System design](../assets/images/starting-up-leader/Imaginary-System.png "System design")
 > System design for our platform
 
 A logical design like this has a number of useful features:
 * Shows the overall footprint of the system. 
-* Shows what will be built vs used.  
-* Abstract enough to be understood by both technical and non-technical stakeholders.
+* Shows what will be built vs bought/rented.  
+* It is abstract enough to be understood by both technical and non-technical stakeholders.
 
 Of course this is not the only way to represent things at a high level.  
 The [C4 model][10] is another excellent way to represent a system at increasing levels of detail. I have covered this 
 in detail in a [previous post][11].
 
 One thing to consider is the audience for this design.  
-Especially in an early-stage company, everyone does everything and so everyone needs to be able to understand everything.
-More so fund-raising is almost always a full-time job, with 10s of investors doing all kinds of dilligence. The system 
+Especially in an early-stage company, everyone does everything. So everyone needs to be able to understand everything.
+In addition, fund-raising can become a full-time job, with potential investors asking all kinds of questions. The system 
 should be understandable by everyone, not just the technical team.
 
 With the system design in place, it is time to consider...
@@ -176,20 +177,19 @@ With the system design in place, it is time to consider...
 > Photo by Volodymyr Hryshchenko on Unsplash
 
 [AGI][12]-for-development is not here yet, so we cannot have our system built at the snap of a finger.  
-We need to plan for its delivery and try to answer the burning questions: *How much?" and "By when?".
+We need to plan for its delivery and try to answer the burning questions: **How much?** and **By when?**.
 
 This is where we dust off our project manager hat and start looking at [Gantt charts][13] and tools.  
-
-We start off by putting our mindmap branches and leaves<sup>[1](#footnote_1)</sup> onto a chart as tasks and subtasks.   
+We start by putting our mindmap branches and leaves<sup>[1](#footnote_1)</sup> onto a chart as tasks and subtasks.   
 Then we try to make some effort estimations.  
 
 > Before you jump out of your chair and start screaming "[Planning fallacy][14]!"; yes, you are [correct][15]! This 
 > exercise is fraught and loaded with biases and assumptions.    
 > However, unless you are 
-> * working on a bootstrapped project, and
+> * working in a bootstrapped project, and
 > * everyone in the team is technical and experienced, then
 >
-> one or more stakeholders (co-founders, investors, colleagues, etc) will need some directionally correct guidance.<sup>[2](#footnote_2)</sup>   
+> one or more people (co-founders, investors, colleagues, etc) will need some directionally correct guidance.<sup>[2](#footnote_2)</sup>   
 > So the best you can do is be very mindful and transparent of the assumptions & biases you or the team "baked into the 
 > cake".
 
@@ -228,7 +228,7 @@ By shuffling things around, we can get a rough plan that looks like this.
 3. while reducing the requirements for each role to 1 person per month.
 
 This is a good conversation starter with the co-founders with regard to feature release cadence, delivery risks and 
-possible delays, plan Bs and trade-offs etc.
+possible delays, plan B, C... and trade-offs etc.
 
 ## 4. The team & the budget
  
@@ -246,19 +246,23 @@ By when?
 How many people? 
 What are the salaries? 
 
-These are now very easy to answer. We can decide whether we want to hire full-time or contractors, how many people, 
-[local][18] or [remote][19] etc
+These are now very easy to answer.  
+We can decide whether we want to hire full-time or contractors, how many people, [local][18] or [remote][19] etc
 
 # Parting thought
 
 ![Sailing forward](../assets/images/starting-up-leader/marc-wieland-U9YrT6trizs-unsplash.jpg)
 > Photo by Marc Wieland on Unsplash
 
+And that was it!
+
 There is no substitute for taking action, building the MVP and getting your [first 100 customers][20] ASAP.  
 This is priority zero.
 
 Complementary to that, as a technical leader, you owe it to your self and the team to take a step back for a few hours 
 and think about the broader picture and your direction of travel.  
+You may already have all of the above in your head when you start plowing forward. It only takes a couple of hours to
+jot things down and make your thought process and plan consumable by everyone.
 Hopefully this article has given you some ideas on how to do that.
 
 Until next time, excelsior!
@@ -266,10 +270,12 @@ Until next time, excelsior!
 # Footnotes
 
 1. <a name="footnote_1"></a>This includes the tasks that are "part of the product", i.e. we can implement them. If our 
-   mindmap contains branches like "Hiring", "Training", "Open Questions" etc. it is obvious that they do not belong here.
+   mindmap contains branches like "Hiring", "Training", "Open Questions" etc. it is clear that they are not part of the 
+   technical plan.
 2. <a name="footnote_2"></a>An overall effort estimation of, say, 1 month can easily turn into 2 & 3 months in practice, 
    no matter how well thought-through the estimation. It happens all the time.  
-   But it is in a different league to an initial overall effort of, say, 1 year. 
+   But it is in a different league to an initial estimated effort of, say, 1 year. Orders of magnitude matter, which is 
+   why, e.g. [planning poker][22] was invented.
 
 
 
@@ -293,3 +299,5 @@ Until next time, excelsior!
   [18]: https://www.orientsoftware.com/blog/software-engineer-salary-by-countries/
   [19]: https://qubit-labs.com/average-software-developer-salaries-salary-comparison-country/
   [20]: https://www.startups.com/library/expert-advice/how-to-find-the-first-100-customers-for-your-startup
+  [21]: https://en.wikipedia.org/wiki/Virtual_restaurant
+  [22]: https://www.mountaingoatsoftware.com/agile/planning-poker
