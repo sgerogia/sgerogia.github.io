@@ -203,41 +203,63 @@ The result looks something like this.
    measurement is weeks or months at this stage. We are going for direction, not accuracy.
 3. We draw the dependencies between tasks ("X needs to finish before Y can start"). Our Gantt tool will then take care 
    of arranging the dependent tasks in the correct time order.
-4. The tool keeps track of the total effort for each independent system. At this stage we do not worry about overall 
-   capacity, i.e. how many things our team can deliver in parallel. We are only interested in hard, dependency-driven 
-   timing contraints.
+4. The tool keeps track of the total calendar time needed for completion. At this stage we do not worry about overall 
+   capacity, i.e. how many things our team can deliver in parallel. We are only interested in hard timing cnstraints, 
+   driven by system dependencies.  
 5. The tool keeps track of the cumulative effort each role has to spend in each unit of time. In this example here, our 
    Backend Engineer (BE) is forecasted for >530 work-hours in the first month (a month being ~160 work-hours). This starts
    highlighting the "hotspot periods" of effort if we could hire an unlimited number of people.   
 
-In most cases our pockets tend to be very shallow. Therefore we need to revisit the plan to optimise for the available 
-budget.  
+Unless this is a government project, almost always there is some parameter we are constrained by: time-to-market or budget.  
 Without touching the estimations and task dependencies, can we move the work items around to smoothen the overall effort?  
 Can we move some tasks to a later date? Can we have a release cadence of features? 
 If the above is not possible, should we consider reducing the scope?  
+All of the above questions and trade-offs (and more) are part of grapling with the [Triple Constraint][16].   
 
-All of the above questions are part of grapling with the [Triple Constraint Theory][16].   
-
-In our imaginary scenario, we have the fixed constraints of "up to 6 months" and "scope is non-negotiable".  
-Therefore we only need to optimise cost by smoothing down the spikes of effort.
+In our imaginary scenario, we have the fixed constraints of "up to 6 months" and "scope is non-negotiable". Therefore we 
+can only attempt to optimise costs by smoothing down the spikes of effort as best as possible.  
+By shuffling things around, we can get a rough plan that looks like this.
 
 ![Gantt chart v2](../assets/images/starting-up-leader/gantt-2.png "Gantt chart v2")
 > Our Gantt chart v2
 
+1. We pushed back the implementation of some systems... 
+2. which extended the overall delivery timeline to 4-and-something months,
+3. while reducing the requirements for each role to 1 person per month.
 
+This is a good conversation starter with the co-founders with regard to feature release cadence, delivery risks and 
+possible delays, plan Bs and trade-offs etc.
 
 ## 4. The team & the budget
  
 ![Teamwork](../assets/images/starting-up-leader/randy-fath-ymf4_9Y9S_A-unsplash.jpg "Teamwork")
 > Photo by Randy Fath on Unsplash
 
+We are practically there! 
+Starting from nothing we are now at the point where we can seriously discuss about timelines and (if our budget permits) 
+hiring.
 
+Let's continue our [LARPing][17] exercise and pretend that we have a budget. The questions that our co-founders will ask
+are easy to predict.  
+Which roles do we need to hire? 
+By when? 
+How many people? 
+What are the salaries? 
 
-# Discussion & Parting thought
+These are now very easy to answer. We can decide whether we want to hire full-time or contractors, how many people, 
+[local][18] or [remote][19] etc
+
+# Parting thought
 
 ![Sailing forward](../assets/images/starting-up-leader/marc-wieland-U9YrT6trizs-unsplash.jpg)
 > Photo by Marc Wieland on Unsplash
 
+There is no substitute for taking action, building the MVP and getting your [first 100 customers][20] ASAP.  
+This is priority zero.
+
+Complementary to that, as a technical leader, you owe it to your self and the team to take a step back for a few hours 
+and think about the broader picture and your direction of travel.  
+Hopefully this article has given you some ideas on how to do that.
 
 Until next time, excelsior!
 
@@ -267,3 +289,7 @@ Until next time, excelsior!
   [14]: https://en.wikipedia.org/wiki/Planning_fallacy
   [15]: https://zapier.com/blog/how-to-estimate-time/
   [16]: https://www.smartsheet.com/triple-constraint-triangle-theory
+  [17]: https://www.merriam-webster.com/dictionary/LARP
+  [18]: https://www.orientsoftware.com/blog/software-engineer-salary-by-countries/
+  [19]: https://qubit-labs.com/average-software-developer-salaries-salary-comparison-country/
+  [20]: https://www.startups.com/library/expert-advice/how-to-find-the-first-100-customers-for-your-startup
