@@ -4,7 +4,7 @@ title: "Angel Investing: Getting PAID - Part 3"
 author: stelios
 tags: [investing, general knowledge, angel investing]
 categories: [General Knowledge, Investing, Angel Investing]
-featured: true
+featured: false
 description: "The third article in a series on angel investing. In this article I am discussing the business' 'defensible moat' and its delivery mechanisms."
 image: assets/images/angel-part3/leanna-cox-ukhn2gy9_CU-unsplash.jpg
 ---

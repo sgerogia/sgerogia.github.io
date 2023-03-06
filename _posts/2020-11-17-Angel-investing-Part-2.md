@@ -4,7 +4,7 @@ title: "Getting PAID: A intro to Angel Investing - Part 2"
 author: stelios
 tags: [investing, general knowledge, angel investing]
 categories: [General Knowledge, Investing, Angel Investing]
-featured: true
+featured: false
 description: "The second article in a series on angel investing. In this article, I am discussing the 'How much' of the business"
 image: assets/images/angel-part2/charles-forerunner-3fPXt37X6UQ-unsplash.jpg
 ---
