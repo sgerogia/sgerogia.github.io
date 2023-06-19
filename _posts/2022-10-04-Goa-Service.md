@@ -4,7 +4,7 @@ title: 'A trip to Goa: Go services the easy way'
 author: stelios
 tags: [programming, hands-on, api, golang]
 categories: [Microservices]
-featured: true
+featured: false
 description: "In this post we are taking a close look at Goa, a contract-first microservice framework in Golang."
 image: assets/images/goa-service/digjot-singh-ZemFx1ctq3o-unsplash.jpg
 ---
