@@ -5,7 +5,7 @@ description: "My thoughts on software, tech, the future and everything in betwee
 logo: 'assets/icon/favicon-96x96.png'
 favicon: 'assets/icon/favicon-96x96.png'
 baseurl:
-google_analytics: ' UA-64259307-1'
+google_analytics: 'G-LBPZT7GWD3'
 disqus: 'sgerogia'
 mailchimp-list: # 'https://wowthemes.us11.list-manage.com/subscribe/post?u=8aeb20a530e124561927d3bd8&amp;id=8c3d2d214b'
 include: ["_pages"]
